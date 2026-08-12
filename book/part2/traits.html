@@ -1,0 +1,482 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN" class="rust" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>2.3 类型系统、trait 与泛型 - Rust 智能驾驶开发：从小白到工程师</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="一本面向零基础读者、以 Rust 为主语言、系统讲解自动驾驶软件开发的实战教程。">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+        <!-- MathJax -->
+        <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "rust";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../preface.html">前言：这本书能带你到哪里</a></li><li class="chapter-item expanded affix "><a href="../how-to-use.html">如何使用本书</a></li><li class="chapter-item expanded affix "><li class="part-title">第一部分 · 认识智能驾驶</li><li class="chapter-item expanded "><a href="../part1/levels.html"><strong aria-hidden="true">1.</strong> 1.1 什么是自动驾驶：从 L0 到 L5</a></li><li class="chapter-item expanded "><a href="../part1/architecture.html"><strong aria-hidden="true">2.</strong> 1.2 一辆自动驾驶车的软件全景</a></li><li class="chapter-item expanded "><a href="../part1/pipeline.html"><strong aria-hidden="true">3.</strong> 1.3 感知—定位—预测—规划—控制 五大模块</a></li><li class="chapter-item expanded "><a href="../part1/why-rust.html"><strong aria-hidden="true">4.</strong> 1.4 为什么在智能驾驶里用 Rust</a></li><li class="chapter-item expanded "><a href="../part1/industry.html"><strong aria-hidden="true">5.</strong> 1.5 行业现状、岗位与技术栈地图</a></li><li class="chapter-item expanded affix "><li class="part-title">第二部分 · 面向智驾的 Rust 语言基础</li><li class="chapter-item expanded "><a href="../part2/setup.html"><strong aria-hidden="true">6.</strong> 2.1 搭建 Rust 开发环境</a></li><li class="chapter-item expanded "><a href="../part2/ownership.html"><strong aria-hidden="true">7.</strong> 2.2 所有权、借用与生命周期</a></li><li class="chapter-item expanded "><a href="../part2/traits.html" class="active"><strong aria-hidden="true">8.</strong> 2.3 类型系统、trait 与泛型</a></li><li class="chapter-item expanded "><a href="../part2/errors.html"><strong aria-hidden="true">9.</strong> 2.4 错误处理：Result、Option 与 anyhow</a></li><li class="chapter-item expanded "><a href="../part2/concurrency.html"><strong aria-hidden="true">10.</strong> 2.5 并发与异步：线程、channel、tokio</a></li><li class="chapter-item expanded "><a href="../part2/ecosystem.html"><strong aria-hidden="true">11.</strong> 2.6 智驾常用 crate 生态速览</a></li><li class="chapter-item expanded "><a href="../part2/performance-ffi.html"><strong aria-hidden="true">12.</strong> 2.7 性能工程、unsafe 与 C/C++ FFI</a></li><li class="chapter-item expanded affix "><li class="part-title">第三部分 · 传感器、坐标系与数据</li><li class="chapter-item expanded "><a href="../part3/sensors.html"><strong aria-hidden="true">13.</strong> 3.1 传感器全家福：相机、激光雷达、毫米波、IMU、GNSS</a></li><li class="chapter-item expanded "><a href="../part3/coordinates.html"><strong aria-hidden="true">14.</strong> 3.2 坐标系与刚体变换</a></li><li class="chapter-item expanded "><a href="../part3/time-sync.html"><strong aria-hidden="true">15.</strong> 3.3 时间戳、同步与数据流</a></li><li class="chapter-item expanded "><a href="../part3/data-model.html"><strong aria-hidden="true">16.</strong> 3.4 用 Rust 表达传感器数据</a></li><li class="chapter-item expanded "><a href="../part3/calibration.html"><strong aria-hidden="true">17.</strong> 3.5 传感器标定、运动补偿与在线健康监测</a></li><li class="chapter-item expanded affix "><li class="part-title">第四部分 · 感知</li><li class="chapter-item expanded "><a href="../part4/overview.html"><strong aria-hidden="true">18.</strong> 4.1 感知任务总览</a></li><li class="chapter-item expanded "><a href="../part4/image.html"><strong aria-hidden="true">19.</strong> 4.2 图像处理基础与 Rust 实现</a></li><li class="chapter-item expanded "><a href="../part4/inference.html"><strong aria-hidden="true">20.</strong> 4.3 深度学习推理：onnxruntime / tract / candle</a></li><li class="chapter-item expanded "><a href="../part4/pointcloud.html"><strong aria-hidden="true">21.</strong> 4.4 点云处理与激光雷达感知</a></li><li class="chapter-item expanded "><a href="../part4/tracking-fusion.html"><strong aria-hidden="true">22.</strong> 4.5 多目标跟踪与传感器融合</a></li><li class="chapter-item expanded "><a href="../part4/data-loop.html"><strong aria-hidden="true">23.</strong> 4.6 感知数据闭环与量产评测</a></li><li class="chapter-item expanded affix "><li class="part-title">第五部分 · 定位、建图与状态估计</li><li class="chapter-item expanded "><a href="../part5/kalman.html"><strong aria-hidden="true">24.</strong> 5.1 状态估计与卡尔曼滤波</a></li><li class="chapter-item expanded "><a href="../part5/localization.html"><strong aria-hidden="true">25.</strong> 5.2 定位：GNSS/IMU 组合导航与地图匹配</a></li><li class="chapter-item expanded "><a href="../part5/slam-hdmap.html"><strong aria-hidden="true">26.</strong> 5.3 SLAM 与高精地图概览</a></li><li class="chapter-item expanded affix "><li class="part-title">第六部分 · 预测与规划</li><li class="chapter-item expanded "><a href="../part6/prediction.html"><strong aria-hidden="true">27.</strong> 6.1 行为预测</a></li><li class="chapter-item expanded "><a href="../part6/planning.html"><strong aria-hidden="true">28.</strong> 6.2 路径与轨迹规划</a></li><li class="chapter-item expanded "><a href="../part6/decision.html"><strong aria-hidden="true">29.</strong> 6.3 决策与行为规划</a></li><li class="chapter-item expanded affix "><li class="part-title">第七部分 · 控制</li><li class="chapter-item expanded "><a href="../part7/vehicle-model.html"><strong aria-hidden="true">30.</strong> 7.1 车辆运动学与动力学模型</a></li><li class="chapter-item expanded "><a href="../part7/control.html"><strong aria-hidden="true">31.</strong> 7.2 横向与纵向控制：PID 到 MPC</a></li><li class="chapter-item expanded affix "><li class="part-title">第八部分 · 中间件与系统集成</li><li class="chapter-item expanded "><a href="../part8/middleware.html"><strong aria-hidden="true">32.</strong> 8.1 自动驾驶中间件全景</a></li><li class="chapter-item expanded "><a href="../part8/ros2-rclrs.html"><strong aria-hidden="true">33.</strong> 8.2 ROS 2 与 rclrs：用 Rust 写节点</a></li><li class="chapter-item expanded "><a href="../part8/zenoh-dds.html"><strong aria-hidden="true">34.</strong> 8.3 Zenoh、DDS 与零拷贝通信</a></li><li class="chapter-item expanded "><a href="../part8/messages.html"><strong aria-hidden="true">35.</strong> 8.4 消息定义与序列化</a></li><li class="chapter-item expanded "><a href="../part8/runtime-engineering.html"><strong aria-hidden="true">36.</strong> 8.5 运行时工程：背压、可观测性与资源预算</a></li><li class="chapter-item expanded affix "><li class="part-title">第九部分 · 仿真、测试与安全</li><li class="chapter-item expanded "><a href="../part9/simulation.html"><strong aria-hidden="true">37.</strong> 9.1 仿真：CARLA 与数据回放</a></li><li class="chapter-item expanded "><a href="../part9/testing.html"><strong aria-hidden="true">38.</strong> 9.2 测试策略：单元、集成与录制回放</a></li><li class="chapter-item expanded "><a href="../part9/safety.html"><strong aria-hidden="true">39.</strong> 9.3 功能安全、实时性与部署</a></li><li class="chapter-item expanded "><a href="../part9/cybersecurity.html"><strong aria-hidden="true">40.</strong> 9.4 汽车网络安全、供应链与安全 OTA</a></li><li class="chapter-item expanded "><a href="../part9/safety-case.html"><strong aria-hidden="true">41.</strong> 9.5 系统工程、安全论证与故障注入</a></li><li class="chapter-item expanded affix "><li class="part-title">第十部分 · 实战与职业</li><li class="chapter-item expanded "><a href="../part10/project.html"><strong aria-hidden="true">42.</strong> 10.1 实战项目：搭一个最小自动驾驶栈</a></li><li class="chapter-item expanded "><a href="../part10/career.html"><strong aria-hidden="true">43.</strong> 10.2 学习路线图与求职准备</a></li><li class="chapter-item expanded "><a href="../part10/glossary.html"><strong aria-hidden="true">44.</strong> 10.3 常见术语表</a></li><li class="chapter-item expanded "><a href="../part10/competency.html"><strong aria-hidden="true">45.</strong> 10.4 逐章能力验收与作品集证据</a></li><li class="chapter-item expanded "><a href="../part10/capstone.html"><strong aria-hidden="true">46.</strong> 10.5 中高级毕业项目：从最小栈到可评审系统</a></li><li class="chapter-item expanded affix "><li class="spacer"></li><li class="chapter-item expanded affix "><a href="../afterword.html">后记与延伸资源</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Rust 智能驾驶开发：从小白到工程师</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="23-类型系统trait-与泛型"><a class="header" href="#23-类型系统trait-与泛型">2.3 类型系统、trait 与泛型</a></h1>
+<p>上一章你学会了怎么安全地管理内存。这一章讲怎么<strong>优雅地建模问题</strong>。Rust 的类型系统是它除所有权之外的第二大杀手锏——它让你能把"一个障碍物要么是车、要么是人、要么未知""一条传感器消息要么是图像帧、要么是点云帧"这类事实，<strong>直接编码进类型里</strong>，让编译器帮你保证逻辑完备、不漏分支。</p>
+<p>如果你从 C 或 Python 来，会经历一个观念转变：在那些语言里类型系统常常是碍事的（"我就想塞个值进去，别拦我"）；而在 Rust 里，类型系统是你<strong>主动使唤的工具</strong>——你用它把非法状态变得根本无法表达（make illegal states unrepresentable）。对一个安全攸关的系统，这是巨大的价值。</p>
+<h2 id="struct把相关数据捆在一起"><a class="header" href="#struct把相关数据捆在一起">struct：把相关数据捆在一起</a></h2>
+<p>你已经见过 <code>struct</code> 了（<code>Obstacle</code>、<code>Pose</code>）。它就是把几个字段捆成一个类型。这里只补两个你该知道的变体。</p>
+<p><strong>元组结构体（tuple struct）</strong>——字段没名字，适合"新类型"包装：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// 用新类型区分“米”和“弧度”，防止把角度当距离传错
+struct Meters(f64);
+struct Radians(f64);
+<span class="boring">}</span></code></pre></pre>
+<p>这招叫 <strong>newtype 模式</strong>。看着啰嗦，但它让编译器帮你抓住"把方向盘转角（弧度）误传给了纵向距离（米）"这种低级但致命的单位混淆——在坐标变换和控制里，单位搞错是真实事故的来源。</p>
+<p><strong>给 struct 加方法</strong>用 <code>impl</code>（第 2.1 节已经用过）：</p>
+<pre><code class="language-rust ignore">impl Obstacle {
+    /// 关联函数（无 self），当构造器用
+    pub fn new(id: u32, class: ObstacleClass) -&gt; Self {
+        Self { id, class, position: [0.0; 3], velocity: [0.0; 3],
+               size: [0.0; 3], heading: 0.0, confidence: 0.0 }
+    }
+    /// 方法（有 &amp;self）
+    pub fn speed(&amp;self) -&gt; f64 {
+        let [vx, vy, vz] = self.velocity;
+        (vx * vx + vy * vy + vz * vz).sqrt()
+    }
+}</code></pre>
+<h2 id="enumrust-最被低估的特性"><a class="header" href="#enumrust-最被低估的特性">enum：Rust 最被低估的特性</a></h2>
+<p>如果你只从 C 认识 <code>enum</code>（一堆整数常量），Rust 的 <code>enum</code> 会让你重新认识它。Rust 的 <code>enum</code> 是<strong>代数数据类型（algebraic data type）</strong>——每个变体可以携带<strong>不同类型、不同数量</strong>的数据。这是它比 C++ 表达力强得多的地方。</p>
+<p>先看简单的（第 1.3 节定义过的障碍物类别）：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum ObstacleClass {
+    Vehicle,
+    Pedestrian,
+    Cyclist,
+    Unknown,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>这和 C 的枚举差不多。真正的威力在于<strong>变体能带数据</strong>。想象你的系统从各种传感器收消息，它们结构完全不同——图像是一大块像素、点云是一堆点、雷达是几十个目标、IMU 是几个浮点数。用一个 enum 统一表达：</p>
+<pre><code class="language-rust ignore">/// 传感器消息：一个类型，涵盖所有传感器输出
+pub enum SensorMessage {
+    Camera { timestamp: f64, width: u32, height: u32, data: Vec&lt;u8&gt; },
+    Lidar(PointCloud),
+    Radar { timestamp: f64, targets: Vec&lt;RadarTarget&gt; },
+    Imu { timestamp: f64, accel: [f64; 3], gyro: [f64; 3] },
+    GnssLost,  // 有些变体根本不带数据
+}</code></pre>
+<p>一个 <code>SensorMessage</code> <strong>在任意时刻恰好是这五种之一</strong>，编译器清清楚楚。这比 C++ 里"一个基类指针 + 一堆子类 + <code>dynamic_cast</code>"或者"一个 union + 一个手动维护的 tag"干净太多，也安全太多——那些方案里你可能忘了处理某个 tag，Rust 不会让你忘。</p>
+<h2 id="模式匹配match-的完备性检查"><a class="header" href="#模式匹配match-的完备性检查">模式匹配：<code>match</code> 的完备性检查</a></h2>
+<p>拿到一个 <code>SensorMessage</code>，你用 <code>match</code> 拆开它。<code>match</code> 不只是 <code>switch</code> 的升级版——它有一个杀手级特性：<strong>编译器强制你处理所有变体</strong>。</p>
+<pre><code class="language-rust ignore">fn dispatch(msg: &amp;SensorMessage) {
+    match msg {
+        SensorMessage::Camera { width, height, .. } =&gt; {
+            log::info!("图像帧 {}x{}", width, height);
+        }
+        SensorMessage::Lidar(cloud) =&gt; {
+            log::info!("点云帧 {} 个点", cloud.points.len());
+        }
+        SensorMessage::Radar { targets, .. } =&gt; {
+            log::info!("雷达 {} 个目标", targets.len());
+        }
+        SensorMessage::Imu { accel, .. } =&gt; {
+            log::info!("IMU 加速度 {:?}", accel);
+        }
+        SensorMessage::GnssLost =&gt; {
+            log::warn!("GNSS 信号丢失！");
+        }
+    }
+}</code></pre>
+<p>假如有一天团队给 <code>SensorMessage</code> 加了个新变体 <code>Ultrasonic { .. }</code>，而你忘了在这个 <code>match</code> 里处理它——<strong>编译器会报错</strong>：<code>non-exhaustive patterns: SensorMessage::Ultrasonic not covered</code>。</p>
+<p>停下来体会这件事的分量：在一个几十个模块的大系统里，加一个新传感器类型，编译器会<strong>精确地把所有需要更新的 <code>match</code> 都给你标出来</strong>。C++ 的 <code>switch</code> 漏了个 case 顶多给个可关闭的 warning，运行时静默走 default 甚至什么都不做——在车上，"静默漏处理一种传感器状态"可能就是一次故障。<strong>Rust 的完备性检查把"改动引发的遗漏"从运行时隐患变成编译期清单。</strong> 这是我最推崇的 Rust 特性之一。</p>
+<p>模式匹配还能做很多事——解构、绑定、加守卫条件：</p>
+<pre><code class="language-rust ignore">fn assess(obs: &amp;Obstacle) -&gt; &amp;'static str {
+    match obs.class {
+        ObstacleClass::Pedestrian | ObstacleClass::Cyclist if obs.speed() &gt; 1.0 =&gt;
+            "移动的弱势道路使用者，高度警惕",
+        ObstacleClass::Pedestrian | ObstacleClass::Cyclist =&gt;
+            "静止的弱势道路使用者，警惕",
+        ObstacleClass::Vehicle if obs.position[0] &lt; 20.0 =&gt;
+            "近处车辆，注意",
+        _ =&gt; "其它，常规处理",
+    }
+}</code></pre>
+<p><code>|</code> 是"或多个模式"，<code>if</code> 是<strong>守卫（guard）</strong>，<code>_</code> 是"其余全部"。这套东西让复杂的分类逻辑写得又紧凑又不漏。</p>
+<blockquote>
+<p><strong>面试题</strong>：<code>Option&lt;T&gt;</code> 和 <code>Result&lt;T, E&gt;</code> 的本质是什么？
+<strong>答</strong>：它们就是标准库里的普通 <code>enum</code>，没有任何魔法。<code>Option&lt;T&gt;</code> 是 <code>Some(T) | None</code>，<code>Result&lt;T, E&gt;</code> 是 <code>Ok(T) | Err(E)</code>。Rust 用"带数据的枚举 + 强制完备匹配"取代了其它语言的 null 和异常——你<strong>必须</strong>显式处理"没有值"和"出错了"的分支，编译器不让你假装它们不存在。这是第 2.4 节错误处理的全部基础。</p>
+</blockquote>
+<h2 id="traitrust-的接口"><a class="header" href="#traitrust-的接口">trait：Rust 的接口</a></h2>
+<p><code>struct</code>/<code>enum</code> 描述"数据是什么"，<strong>trait（特征）</strong> 描述"能干什么"——它是 Rust 版的接口（interface），定义一组行为，让不同类型去实现。</p>
+<p>在智驾里，"传感器"是个天然的抽象：不管是相机、激光雷达还是雷达，它们都能"读一帧数据"。定义一个 <code>Sensor</code> trait：</p>
+<pre><code class="language-rust ignore">/// 任何传感器都能被轮询出一帧消息
+pub trait Sensor {
+    /// 传感器名字，用于日志
+    fn name(&amp;self) -&gt; &amp;str;
+
+    /// 读一帧；读不到（还没数据/掉线）返回 None
+    fn poll(&amp;mut self) -&gt; Option&lt;SensorMessage&gt;;
+
+    /// 标称频率（Hz），有个默认实现——不是每个传感器都要重写
+    fn nominal_rate_hz(&amp;self) -&gt; f64 {
+        10.0
+    }
+}</code></pre>
+<p>注意 <code>nominal_rate_hz</code> 有个<strong>默认实现</strong>——实现这个 trait 的类型可以直接用，也可以重写。这让 trait 既能定契约又能提供公共逻辑。</p>
+<p>给具体传感器实现它：</p>
+<pre><code class="language-rust ignore">pub struct Lidar {
+    driver_handle: u32,
+    // ...
+}
+
+impl Sensor for Lidar {
+    fn name(&amp;self) -&gt; &amp;str { "lidar_top" }
+
+    fn poll(&amp;mut self) -&gt; Option&lt;SensorMessage&gt; {
+        // 真实实现会去读驱动；这里示意
+        let cloud = read_from_driver(self.driver_handle)?; // ? 见 2.4 节
+        Some(SensorMessage::Lidar(cloud))
+    }
+
+    fn nominal_rate_hz(&amp;self) -&gt; f64 { 10.0 } // 激光雷达通常 10 Hz
+}</code></pre>
+<p>再定义一个更贴近感知的 <code>Detector</code> trait——"能从一帧数据里检出障碍物":</p>
+<pre><code class="language-rust ignore">pub trait Detector {
+    /// 从点云检出障碍物
+    fn detect(&amp;self, cloud: &amp;PointCloud) -&gt; Vec&lt;Obstacle&gt;;
+}</code></pre>
+<p>你可以有多个实现：一个基于传统聚类的 <code>EuclideanClusterDetector</code>、一个基于深度学习的 <code>PointPillarsDetector</code>（第四部分详讲）。它们输入输出契约相同，可以互换。</p>
+<h2 id="派生宏让编译器帮你写实现"><a class="header" href="#派生宏让编译器帮你写实现">派生宏：让编译器帮你写实现</a></h2>
+<p>你一直在用的 <code>#[derive(...)]</code> 就是让编译器<strong>自动生成 trait 实现</strong>的宏。手写这些实现又臭又长，<code>derive</code> 一行搞定。常用的几个：</p>
+<div class="table-wrapper"><table><thead><tr><th>派生</th><th>作用</th><th>智驾里的典型用途</th></tr></thead><tbody>
+<tr><td><code>Debug</code></td><td>用 <code>{:?}</code> 打印</td><td>日志、调试，几乎人人加</td></tr>
+<tr><td><code>Clone</code></td><td>提供 <code>.clone()</code> 深拷贝</td><td>需要独立副本时</td></tr>
+<tr><td><code>Copy</code></td><td>赋值时按位复制（见 2.2）</td><td>小值类型如 <code>Point</code>、<code>Pose</code></td></tr>
+<tr><td><code>PartialEq</code>/<code>Eq</code></td><td>支持 <code>==</code> 比较</td><td>比较障碍物类别、ID</td></tr>
+<tr><td><code>PartialOrd</code>/<code>Ord</code></td><td>支持 <code>&lt;</code>、排序</td><td>按距离/时间排序</td></tr>
+<tr><td><code>Hash</code></td><td>能做 HashMap 的键</td><td>用障碍物 ID 建索引</td></tr>
+<tr><td><code>Default</code></td><td>提供 <code>T::default()</code> 零值</td><td>初始化配置、状态</td></tr>
+<tr><td><code>Serialize</code>/<code>Deserialize</code></td><td>serde 序列化（见 2.6）</td><td>存/读配置、消息</td></tr>
+</tbody></table>
+</div>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
+pub struct TrajectoryPoint { /* 来自 1.3 节 */
+    pub t: f64, pub x: f64, pub y: f64, pub v: f64, pub heading: f64,
+}
+<span class="boring">}</span></code></pre></pre>
+<blockquote>
+<p><strong>中高级视角</strong>：<code>Serialize</code>/<code>Deserialize</code> 来自第三方 crate <code>serde</code>，能被 <code>derive</code> 是因为 serde 提供了派生宏。这引出 Rust 生态的一个哲学：<strong>语言核心保持精简，强大能力通过 trait + 派生宏由库提供</strong>。你之后会给消息类型加 <code>#[derive(Serialize, Deserialize)]</code>，然后它就能免费获得 JSON、二进制、protobuf 等各种格式的序列化能力（第 8.4 节）。</p>
+</blockquote>
+<h2 id="泛型--trait-bound一份代码多种类型"><a class="header" href="#泛型--trait-bound一份代码多种类型">泛型 + trait bound：一份代码，多种类型</a></h2>
+<p>现在把 trait 和泛型（generics）结合起来。假设你要写一个"处理任意检测器输出的后处理函数"，你不想为每种检测器各写一遍。泛型让你写一份：</p>
+<pre><code class="language-rust ignore">/// 对任意实现了 Detector 的检测器，跑检测并按距离排序
+fn detect_and_sort&lt;D: Detector&gt;(detector: &amp;D, cloud: &amp;PointCloud) -&gt; Vec&lt;Obstacle&gt; {
+    let mut obstacles = detector.detect(cloud);
+    obstacles.sort_by(|a, b| {
+        let da = a.position[0].hypot(a.position[1]);
+        let db = b.position[0].hypot(b.position[1]);
+        da.partial_cmp(&amp;db).unwrap()
+    });
+    obstacles
+}</code></pre>
+<p><code>&lt;D: Detector&gt;</code> 读作"对任意类型 <code>D</code>，只要它实现了 <code>Detector</code>"。这个 <code>: Detector</code> 就是 <strong>trait bound（trait 约束）</strong>——它限定 <code>D</code> 必须满足什么能力，编译器才允许你在函数体里调 <code>detector.detect(...)</code>。</p>
+<p>关键点：<strong>泛型是编译期的</strong>。编译器会为你实际用到的每一种 <code>D</code>（比如 <code>EuclideanClusterDetector</code>、<code>PointPillarsDetector</code>）<strong>各生成一份专门的机器码</strong>，这叫<strong>单态化（monomorphization）</strong>。结果就是：泛型代码运行起来和你手写专门版本<strong>一样快，没有任何运行时开销</strong>——这就是 Rust 反复标榜的"零成本抽象"。代价是编译时间变长、二进制变大（每个类型一份代码）。</p>
+<p>trait bound 可以叠加，语法上 <code>where</code> 子句更清爽：</p>
+<pre><code class="language-rust ignore">fn summarize&lt;D&gt;(detector: &amp;D, cloud: &amp;PointCloud) -&gt; String
+where
+    D: Detector,
+{
+    format!("{} 检出 {} 个障碍物", "detector", detector.detect(cloud).len())
+}</code></pre>
+<h2 id="trait-objectdyn动态分发登场"><a class="header" href="#trait-objectdyn动态分发登场">trait object（dyn）：动态分发登场</a></h2>
+<p>泛型很棒，但有个硬限制：<strong>编译期就得确定类型</strong>。可现实里你常常做不到。比如你的传感器管线要管理一组传感器，运行时才根据配置文件决定装了哪些——可能 3 个相机 + 1 个激光雷达 + 5 个雷达。它们类型各异，你想把它们放进<strong>同一个 <code>Vec</code></strong> 里统一轮询。</p>
+<p>泛型的 <code>Vec&lt;T&gt;</code> 要求所有元素是<strong>同一个</strong> <code>T</code>，做不到"混装"。这时需要 <strong>trait object（trait 对象）</strong>，写作 <code>dyn Trait</code>：</p>
+<pre><code class="language-rust ignore">/// 管理一组异构传感器——运行时才知道有哪些
+pub struct SensorHub {
+    sensors: Vec&lt;Box&lt;dyn Sensor&gt;&gt;, // 混装：每个元素是“某个实现了 Sensor 的东西”
+}
+
+impl SensorHub {
+    pub fn poll_all(&amp;mut self) -&gt; Vec&lt;SensorMessage&gt; {
+        let mut msgs = Vec::new();
+        for sensor in self.sensors.iter_mut() {
+            if let Some(msg) = sensor.poll() {  // 动态分发：运行时才决定调谁的 poll
+                log::debug!("从 {} 收到一帧", sensor.name());
+                msgs.push(msg);
+            }
+        }
+        msgs
+    }
+}
+
+fn build_hub(config: &amp;Config) -&gt; SensorHub {
+    let mut sensors: Vec&lt;Box&lt;dyn Sensor&gt;&gt; = Vec::new();
+    if config.has_lidar {
+        sensors.push(Box::new(Lidar { driver_handle: 0 }));
+    }
+    for cam_id in &amp;config.cameras {
+        sensors.push(Box::new(Camera::new(*cam_id)));
+    }
+    SensorHub { sensors }
+}</code></pre>
+<p><code>Box&lt;dyn Sensor&gt;</code> 是一个"指向某个实现了 <code>Sensor</code> 的对象"的胖指针——它带两个指针：一个指数据、一��指该类型的 <strong>vtable（虚函数表）</strong>。调 <code>sensor.poll()</code> 时，程序<strong>在运行时</strong>通过 vtable 查到该调哪个具体实现，这叫<strong>动态分发（dynamic dispatch）</strong>。C++ 工程师会觉得眼熟——这正是虚函数的机制。</p>
+<h2 id="dyn-还是泛型中高级必答的取舍"><a class="header" href="#dyn-还是泛型中高级必答的取舍">dyn 还是泛型？中高级必答的取舍</a></h2>
+<p>这是本章最该记牢的工程判断。两种多态各有取舍：</p>
+<div class="table-wrapper"><table><thead><tr><th></th><th>泛型 <code>&lt;T: Trait&gt;</code></th><th>trait object <code>dyn Trait</code></th></tr></thead><tbody>
+<tr><td>分发时机</td><td>编译期（静态分发）</td><td>运行时（动态分发，查 vtable）</td></tr>
+<tr><td>性能</td><td>零开销，可内联</td><td>每次调用一次间接跳转，无法内联</td></tr>
+<tr><td>二进制大小</td><td>每个类型一份代码，膨胀</td><td>一份代码，紧凑</td></tr>
+<tr><td>能否混装异构类型</td><td>❌ 不能</td><td>✅ 能（<code>Vec&lt;Box&lt;dyn T&gt;&gt;</code>）</td></tr>
+<tr><td>编译期是否需知道类型</td><td>是</td><td>否，运行时决定</td></tr>
+</tbody></table>
+</div>
+<p><strong>决策原则</strong>：</p>
+<ul>
+<li><strong>类型在编译期已知、且在性能热路径上</strong> → 用泛型。比如你的点云滤波算法，模板参数是"哪种滤波核"，编译期定死，就该用泛型让它内联到极致。</li>
+<li><strong>类型运行时才定、或需要把异构类型装一个容器</strong> → 用 <code>dyn</code>。比如上面的 <code>SensorHub</code>、插件系统、根据配置加载的模块。</li>
+</ul>
+<p><strong>那点动态分发的开销要紧吗？</strong> 看频率。传感器管线每 10~100 Hz 轮询一次，每次一个间接跳转（几个纳秒）完全无所谓——这里 <code>dyn</code> 带来的灵活性远比那点开销值钱。但如果是每帧点云对 12 万个点<strong>逐点</strong>调用的操作，放在内层循环里，那动态分发的开销（无法内联、每点一次间接跳转）就会被放大 12 万倍，这时必须用泛型。<strong>判据不是"动态分发慢"，而是"它在不在被高频重复执行的热路径内层"。</strong></p>
+<blockquote>
+<p><strong>真实项目里</strong>：一个常见的漂亮架构是"外层 dyn、内层泛型"。传感器管线的顶层用 <code>Vec&lt;Box&lt;dyn Sensor&gt;&gt;</code> 保持配置灵活（每秒几十次调用，开销无所谓）；而每个传感器内部真正处理海量数据的算法用泛型写死，编译期充分优化。这样你既拿到了运行时的灵活性，又没在热路径上付动态分发的代价。能自然地在同一个系统里分层用好这两种多态，是中高级工程师和初学者的一个分水岭。</p>
+</blockquote>
+<blockquote>
+<p><strong>中高级视角</strong>：不是所有 trait 都能做 trait object。一个 trait 要"对象安全（object-safe）"才能写 <code>dyn Trait</code>——粗略地说，它的方法不能有泛型参数、不能返回 <code>Self</code>（因为运行时不知道 <code>Self</code> 到底多大）。当你遇到 "the trait cannot be made into an object" 这个报错，就是撞上了这条规则。解决办法通常是把那个"不安全"的方法拆出去，或者改用泛型。知道这条，能帮你在设计 trait 时少走弯路。</p>
+</blockquote>
+<h2 id="小结"><a class="header" href="#小结">小结</a></h2>
+<ul>
+<li><strong><code>struct</code></strong> 捆数据，<strong><code>enum</code></strong> 是能带数据的代数类型——用它把"传感器消息""障碍物类别"这类"多选一"的事实编码进类型，让非法状态无法表达。</li>
+<li><strong><code>match</code></strong> 的完备性检查是安全利器：加个新变体，编译器会把所有漏处理的地方精确标给你，把运行时隐患变成编译期清单。</li>
+<li><strong><code>trait</code></strong> 是 Rust 的接口，定义行为（<code>Sensor</code>、<code>Detector</code>），可带默认实现；<strong>派生宏</strong> <code>#[derive(...)]</code> 让编译器替你生成常用实现。</li>
+<li><strong>泛型 + trait bound</strong> 是编译期多态，靠单态化做到零成本，但只能处理编译期已知的单一类型。</li>
+<li><strong>trait object <code>dyn Trait</code></strong> 是运行时多态，能把异构类型装进一个容器（<code>Vec&lt;Box&lt;dyn Sensor&gt;&gt;</code>），代价是一次间接跳转、无法内联。</li>
+<li><strong>选型判据</strong>：类型编译期已知且在热路径内层 → 泛型；运行时才定或需混装 → dyn。经典架构是"外层 dyn 保灵活、内层泛型压性能"。</li>
+</ul>
+<p>下一章讲<strong>错误处理</strong>：<code>Option</code>/<code>Result</code> 的正确用法、<code>?</code> 运算符、用 <code>thiserror</code> 和 <code>anyhow</code> 分别武装库和应用，以及一个车载系统的灵魂拷问——什么时候绝不能 <code>panic</code>，什么时候 fail-fast 反而是对的。</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../part2/ownership.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../part2/errors.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../part2/ownership.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../part2/errors.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

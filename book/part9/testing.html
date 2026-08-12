@@ -1,0 +1,648 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN" class="rust" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>9.2 测试策略：单元、集成与录制回放 - Rust 智能驾驶开发：从小白到工程师</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="一本面向零基础读者、以 Rust 为主语言、系统讲解自动驾驶软件开发的实战教程。">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+        <!-- MathJax -->
+        <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "rust";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../preface.html">前言：这本书能带你到哪里</a></li><li class="chapter-item expanded affix "><a href="../how-to-use.html">如何使用本书</a></li><li class="chapter-item expanded affix "><li class="part-title">第一部分 · 认识智能驾驶</li><li class="chapter-item expanded "><a href="../part1/levels.html"><strong aria-hidden="true">1.</strong> 1.1 什么是自动驾驶：从 L0 到 L5</a></li><li class="chapter-item expanded "><a href="../part1/architecture.html"><strong aria-hidden="true">2.</strong> 1.2 一辆自动驾驶车的软件全景</a></li><li class="chapter-item expanded "><a href="../part1/pipeline.html"><strong aria-hidden="true">3.</strong> 1.3 感知—定位—预测—规划—控制 五大模块</a></li><li class="chapter-item expanded "><a href="../part1/why-rust.html"><strong aria-hidden="true">4.</strong> 1.4 为什么在智能驾驶里用 Rust</a></li><li class="chapter-item expanded "><a href="../part1/industry.html"><strong aria-hidden="true">5.</strong> 1.5 行业现状、岗位与技术栈地图</a></li><li class="chapter-item expanded affix "><li class="part-title">第二部分 · 面向智驾的 Rust 语言基础</li><li class="chapter-item expanded "><a href="../part2/setup.html"><strong aria-hidden="true">6.</strong> 2.1 搭建 Rust 开发环境</a></li><li class="chapter-item expanded "><a href="../part2/ownership.html"><strong aria-hidden="true">7.</strong> 2.2 所有权、借用与生命周期</a></li><li class="chapter-item expanded "><a href="../part2/traits.html"><strong aria-hidden="true">8.</strong> 2.3 类型系统、trait 与泛型</a></li><li class="chapter-item expanded "><a href="../part2/errors.html"><strong aria-hidden="true">9.</strong> 2.4 错误处理：Result、Option 与 anyhow</a></li><li class="chapter-item expanded "><a href="../part2/concurrency.html"><strong aria-hidden="true">10.</strong> 2.5 并发与异步：线程、channel、tokio</a></li><li class="chapter-item expanded "><a href="../part2/ecosystem.html"><strong aria-hidden="true">11.</strong> 2.6 智驾常用 crate 生态速览</a></li><li class="chapter-item expanded "><a href="../part2/performance-ffi.html"><strong aria-hidden="true">12.</strong> 2.7 性能工程、unsafe 与 C/C++ FFI</a></li><li class="chapter-item expanded affix "><li class="part-title">第三部分 · 传感器、坐标系与数据</li><li class="chapter-item expanded "><a href="../part3/sensors.html"><strong aria-hidden="true">13.</strong> 3.1 传感器全家福：相机、激光雷达、毫米波、IMU、GNSS</a></li><li class="chapter-item expanded "><a href="../part3/coordinates.html"><strong aria-hidden="true">14.</strong> 3.2 坐标系与刚体变换</a></li><li class="chapter-item expanded "><a href="../part3/time-sync.html"><strong aria-hidden="true">15.</strong> 3.3 时间戳、同步与数据流</a></li><li class="chapter-item expanded "><a href="../part3/data-model.html"><strong aria-hidden="true">16.</strong> 3.4 用 Rust 表达传感器数据</a></li><li class="chapter-item expanded "><a href="../part3/calibration.html"><strong aria-hidden="true">17.</strong> 3.5 传感器标定、运动补偿与在线健康监测</a></li><li class="chapter-item expanded affix "><li class="part-title">第四部分 · 感知</li><li class="chapter-item expanded "><a href="../part4/overview.html"><strong aria-hidden="true">18.</strong> 4.1 感知任务总览</a></li><li class="chapter-item expanded "><a href="../part4/image.html"><strong aria-hidden="true">19.</strong> 4.2 图像处理基础与 Rust 实现</a></li><li class="chapter-item expanded "><a href="../part4/inference.html"><strong aria-hidden="true">20.</strong> 4.3 深度学习推理：onnxruntime / tract / candle</a></li><li class="chapter-item expanded "><a href="../part4/pointcloud.html"><strong aria-hidden="true">21.</strong> 4.4 点云处理与激光雷达感知</a></li><li class="chapter-item expanded "><a href="../part4/tracking-fusion.html"><strong aria-hidden="true">22.</strong> 4.5 多目标跟踪与传感器融合</a></li><li class="chapter-item expanded "><a href="../part4/data-loop.html"><strong aria-hidden="true">23.</strong> 4.6 感知数据闭环与量产评测</a></li><li class="chapter-item expanded affix "><li class="part-title">第五部分 · 定位、建图与状态估计</li><li class="chapter-item expanded "><a href="../part5/kalman.html"><strong aria-hidden="true">24.</strong> 5.1 状态估计与卡尔曼滤波</a></li><li class="chapter-item expanded "><a href="../part5/localization.html"><strong aria-hidden="true">25.</strong> 5.2 定位：GNSS/IMU 组合导航与地图匹配</a></li><li class="chapter-item expanded "><a href="../part5/slam-hdmap.html"><strong aria-hidden="true">26.</strong> 5.3 SLAM 与高精地图概览</a></li><li class="chapter-item expanded affix "><li class="part-title">第六部分 · 预测与规划</li><li class="chapter-item expanded "><a href="../part6/prediction.html"><strong aria-hidden="true">27.</strong> 6.1 行为预测</a></li><li class="chapter-item expanded "><a href="../part6/planning.html"><strong aria-hidden="true">28.</strong> 6.2 路径与轨迹规划</a></li><li class="chapter-item expanded "><a href="../part6/decision.html"><strong aria-hidden="true">29.</strong> 6.3 决策与行为规划</a></li><li class="chapter-item expanded affix "><li class="part-title">第七部分 · 控制</li><li class="chapter-item expanded "><a href="../part7/vehicle-model.html"><strong aria-hidden="true">30.</strong> 7.1 车辆运动学与动力学模型</a></li><li class="chapter-item expanded "><a href="../part7/control.html"><strong aria-hidden="true">31.</strong> 7.2 横向与纵向控制：PID 到 MPC</a></li><li class="chapter-item expanded affix "><li class="part-title">第八部分 · 中间件与系统集成</li><li class="chapter-item expanded "><a href="../part8/middleware.html"><strong aria-hidden="true">32.</strong> 8.1 自动驾驶中间件全景</a></li><li class="chapter-item expanded "><a href="../part8/ros2-rclrs.html"><strong aria-hidden="true">33.</strong> 8.2 ROS 2 与 rclrs：用 Rust 写节点</a></li><li class="chapter-item expanded "><a href="../part8/zenoh-dds.html"><strong aria-hidden="true">34.</strong> 8.3 Zenoh、DDS 与零拷贝通信</a></li><li class="chapter-item expanded "><a href="../part8/messages.html"><strong aria-hidden="true">35.</strong> 8.4 消息定义与序列化</a></li><li class="chapter-item expanded "><a href="../part8/runtime-engineering.html"><strong aria-hidden="true">36.</strong> 8.5 运行时工程：背压、可观测性与资源预算</a></li><li class="chapter-item expanded affix "><li class="part-title">第九部分 · 仿真、测试与安全</li><li class="chapter-item expanded "><a href="../part9/simulation.html"><strong aria-hidden="true">37.</strong> 9.1 仿真：CARLA 与数据回放</a></li><li class="chapter-item expanded "><a href="../part9/testing.html" class="active"><strong aria-hidden="true">38.</strong> 9.2 测试策略：单元、集成与录制回放</a></li><li class="chapter-item expanded "><a href="../part9/safety.html"><strong aria-hidden="true">39.</strong> 9.3 功能安全、实时性与部署</a></li><li class="chapter-item expanded "><a href="../part9/cybersecurity.html"><strong aria-hidden="true">40.</strong> 9.4 汽车网络安全、供应链与安全 OTA</a></li><li class="chapter-item expanded "><a href="../part9/safety-case.html"><strong aria-hidden="true">41.</strong> 9.5 系统工程、安全论证与故障注入</a></li><li class="chapter-item expanded affix "><li class="part-title">第十部分 · 实战与职业</li><li class="chapter-item expanded "><a href="../part10/project.html"><strong aria-hidden="true">42.</strong> 10.1 实战项目：搭一个最小自动驾驶栈</a></li><li class="chapter-item expanded "><a href="../part10/career.html"><strong aria-hidden="true">43.</strong> 10.2 学习路线图与求职准备</a></li><li class="chapter-item expanded "><a href="../part10/glossary.html"><strong aria-hidden="true">44.</strong> 10.3 常见术语表</a></li><li class="chapter-item expanded "><a href="../part10/competency.html"><strong aria-hidden="true">45.</strong> 10.4 逐章能力验收与作品集证据</a></li><li class="chapter-item expanded "><a href="../part10/capstone.html"><strong aria-hidden="true">46.</strong> 10.5 中高级毕业项目：从最小栈到可评审系统</a></li><li class="chapter-item expanded affix "><li class="spacer"></li><li class="chapter-item expanded affix "><a href="../afterword.html">后记与延伸资源</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Rust 智能驾驶开发：从小白到工程师</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="92-测试策略单元集成与录制回放"><a class="header" href="#92-测试策略单元集成与录制回放">9.2 测试策略：单元、集成与录制回放</a></h1>
+<p>上一节你学会了怎么造一个"虚拟世界"来跑算法。但"能跑"和"跑对"是两回事。这一节回答的问题是：<strong>在一个由几十个模块、几十万行代码、还得在物理世界里赌上人命的系统里，你怎么用工程手段建立起"它是对的"这份信心？</strong></p>
+<p>这一节是整个第九部分里 Rust 工程性最强的一章。我会带你从最基础的 <code>#[test]</code> 一路走到自动驾驶测试真正的王牌——<strong>录制回放测试</strong>。Rust 在这里有个别的语言羡慕不来的优势：<strong>测试是语言的一等公民</strong>，<code>cargo test</code> 开箱即用，不需要任何第三方框架就能写出工业级的测试。我们会把这个优势吃干榨净。</p>
+<h2 id="自动驾驶的测试金字塔长什么样"><a class="header" href="#自动驾驶的测试金字塔长什么样">自动驾驶的测试金字塔长什么样</a></h2>
+<p>软件工程里有个经典的"测试金字塔"（test pyramid）：底部是大量快、便宜、隔离的单元测试，往上是数量递减、越来越慢越来越贵的集成测试和端到端测试。自动驾驶也是这个形状，但每一层都有它的行业特色：</p>
+<pre><code class="language-text">                  ▲  贵、慢、少
+        ┌─────────────────────┐
+        │   真车 / 封闭场地测试  │   最终验证，成本极高
+        ├─────────────────────┤
+        │  闭环仿真场景测试(SIL)  │   造长尾、测决策连锁反应
+        ├─────────────────────┤
+        │   录制回放回归测试      │   ★自动驾驶的核心★ 海量真实数据
+        ├─────────────────────┤
+        │      集成测试         │   多模块拼接：感知→预测→规划
+        ├─────────────────────┤
+        │      单元测试         │   单个函数：一次坐标变换、一步滤波
+        └─────────────────────┘
+                  ▼  便宜、快、多
+</code></pre>
+<p>和普通后端系统最大的不同，是中间那两层特别厚：<strong>录制回放</strong>和<strong>仿真场景</strong>。因为自动驾驶的正确性高度依赖"面对真实世界的复杂分布时表现如何"，这是任何单元测试都覆盖不到的。但别因此轻视底层——<strong>金字塔底座越宽，上层排查问题就越省力</strong>。一个坐标变换的 bug，你是希望在一个 0.1 毫秒的单元测试里抓到，还是在一次跑了半小时的仿真里发现指标莫名其妙变差、再花一天去定位？</p>
+<h2 id="rust-单元测试从零件开始建立信心"><a class="header" href="#rust-单元测试从零件开始建立信心">Rust 单元测试：从零件开始建立信心</a></h2>
+<p>Rust 的单元测试就写在被测代码<strong>同一个文件</strong>里，用一个带 <code>#[cfg(test)]</code> 的模块包起来。<code>#[cfg(test)]</code> 的意思是"只在 <code>cargo test</code> 时编译这段"，正式构建里它不存在、不占一丁点体积——这对车载这种资源受限环境很友好。</p>
+<p>给自动驾驶写单元测试，最值钱的靶子是那些<strong>纯函数式的数学/几何计算</strong>：坐标变换、角度归一化、滤波器的一步更新、控制律的一次求解。它们输入输出明确、无副作用，最好测。</p>
+<p>先看一个几何函数和它的测试。假设我们有一个"把点从世界坐标系变到车体坐标系"的函数——这是感知里天天用的操作：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// 把世界系下的点 (wx, wy) 变换到车体系。
+/// 车体在世界系的位姿是 (px, py, ptheta)。
+/// 车体系：x 朝车头，y 朝车左。
+pub fn world_to_body(wx: f64, wy: f64, px: f64, py: f64, ptheta: f64) -&gt; (f64, f64) {
+    let dx = wx - px;
+    let dy = wy - py;
+    let c = ptheta.cos();
+    let s = ptheta.sin();
+    // 旋转 -ptheta（即世界到车体的逆旋转）
+    let bx = c * dx + s * dy;
+    let by = -s * dx + c * dy;
+    (bx, by)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // 一个好用的浮点近似断言。浮点数几乎永远不该用 == 比较，
+    // 因为 cos/sin 会引入微小舍入误差。
+    fn approx(a: f64, b: f64) -&gt; bool {
+        (a - b).abs() &lt; 1e-9
+    }
+
+    #[test]
+    fn 车体在原点无旋转时_世界系就是车体系() {
+        let (bx, by) = world_to_body(3.0, 4.0, 0.0, 0.0, 0.0);
+        assert!(approx(bx, 3.0));
+        assert!(approx(by, 4.0));
+    }
+
+    #[test]
+    fn 车头朝北时正前方的点应落在车体x轴() {
+        // 车在原点，朝向 +90°（车头指向世界 +y）。
+        // 世界系正上方的点 (0, 5)，在车体系里应该是"正前方 5 米"。
+        let theta = std::f64::consts::FRAC_PI_2;
+        let (bx, by) = world_to_body(0.0, 5.0, 0.0, 0.0, theta);
+        assert!(approx(bx, 5.0), "车体系纵向应为 5，实际 {}", bx);
+        assert!(approx(by, 0.0), "车体系横向应为 0，实际 {}", by);
+    }
+
+    #[test]
+    fn 平移不影响相对几何() {
+        // 车挪到 (100, 100)，点也同步挪 (100, 100)，相对关系不变。
+        let (bx, by) = world_to_body(103.0, 104.0, 100.0, 100.0, 0.0);
+        assert!(approx(bx, 3.0));
+        assert!(approx(by, 4.0));
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>几个地道 Rust 测试的要点，请当成习惯记下来：</p>
+<ul>
+<li><strong><code>assert!</code> / <code>assert_eq!</code> / <code>assert_ne!</code></strong> 是三个主力宏。<code>assert_eq!(a, b)</code> 失败时会自动打印出 <code>a</code> 和 <code>b</code> 的实际值，比 <code>assert!(a == b)</code> 好用得多——排错时你想看到"期望 5.0，实际得到 4.997"，而不是干巴巴一个"false"。</li>
+<li><strong>浮点绝对不要用 <code>==</code></strong>。上面那个 <code>approx</code> 辅助函数（或用 <code>float-cmp</code>、<code>approx</code> 这类 crate）是几何计算测试的标配。<code>cos(π/2)</code> 在计算机里不是精确的 0，而是 <code>6.12e-17</code> 这种东西。</li>
+<li><strong>测试函数名可以用中文</strong>，而且<strong>应该写成一句人话</strong>——它就是一句可执行的规格说明。<code>车头朝北时正前方的点应落在车体x轴</code> 比 <code>test_transform_2</code> 强一百倍：测试挂了的时候，光看名字你就知道哪条性质被破坏了。</li>
+<li><strong>给 <code>assert!</code> 加上失败信息</strong>（第二个参数），把实际值打出来，能省你大量重跑调试的时间。</li>
+</ul>
+<p>再看一个更"自动驾驶"的例子：给一个纯纵向的 PID 控制器写测试。控制器这种带状态、带反馈的东西，测的是它的<strong>行为性质</strong>，而不是某个具体数值：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct Pid {
+    kp: f64,
+    ki: f64,
+    kd: f64,
+    integral: f64,
+    prev_err: f64,
+}
+
+impl Pid {
+    pub fn new(kp: f64, ki: f64, kd: f64) -&gt; Self {
+        Self { kp, ki, kd, integral: 0.0, prev_err: 0.0 }
+    }
+
+    /// 输入期望值与当前值，输出控制量。dt 为时间步。
+    pub fn update(&amp;mut self, setpoint: f64, measured: f64, dt: f64) -&gt; f64 {
+        let err = setpoint - measured;
+        self.integral += err * dt;
+        let deriv = (err - self.prev_err) / dt;
+        self.prev_err = err;
+        self.kp * err + self.ki * self.integral + self.kd * deriv
+    }
+}
+
+#[cfg(test)]
+mod pid_tests {
+    use super::*;
+
+    #[test]
+    fn 误差为正时应输出正的控制量_让被控量往上追() {
+        let mut pid = Pid::new(1.0, 0.0, 0.0);
+        // 期望 10，当前 0，误差 +10，纯比例应输出 +10。
+        let u = pid.update(10.0, 0.0, 0.1);
+        assert!(u &gt; 0.0, "期望正输出，实际 {}", u);
+    }
+
+    #[test]
+    fn 闭环仿真下应收敛到设定值() {
+        // 把 PID 接到一个最简单的一阶被控对象上跑闭环，
+        // 验证它最终能把状态稳到设定值附近——这是控制器最核心的性质。
+        let mut pid = Pid::new(0.8, 0.2, 0.05);
+        let mut x = 0.0;         // 被控量，从 0 起
+        let setpoint = 5.0;
+        let dt = 0.05;
+        for _ in 0..1000 {
+            let u = pid.update(setpoint, x, dt);
+            x += u * dt;         // 极简一阶模型：状态被控制量推动
+        }
+        assert!((x - setpoint).abs() &lt; 0.05, "未收敛，最终 x = {}", x);
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>注意第二个测试的思路：<strong>我们不去断言"第 37 步的输出必须是 3.14159"</strong>（那种测试又脆又没意义，改个增益就红），而是断言一个<strong>行为契约</strong>——"这个控制器闭环下必须收敛到设定值"。这才是测控制器的正确姿势：<strong>测性质，别测魔法数字</strong>。</p>
+<blockquote>
+<p><strong>面试题</strong>："你会怎么给一个卡尔曼滤波器写单元测试？" 弱回答是"喂一组数据看输出对不对"。强回答会分层：① 测<strong>不变量</strong>——协方差矩阵必须始终对称、正定；② 测<strong>极限行为</strong>——测量噪声设为 0 时估计应完全信任测量，设为无穷大时应完全信任预测；③ 测<strong>收敛性</strong>——喂一个恒定真值加噪声，估计的方差应随时间下降并收敛。能说出"测不变量和极限行为"，就说明你懂怎么测有状态的数值算法。</p>
+</blockquote>
+<h2 id="集成测试把模块拼起来测"><a class="header" href="#集成测试把模块拼起来测">集成测试：把模块拼起来测</a></h2>
+<p>单元测试测的是"零件"，集成测试测的是"零件拼在一起对不对"。Rust 对集成测试有专门约定：放在项目根目录的 <strong><code>tests/</code> 文件夹</strong>里，每个文件是一个独立的测试 crate，<strong>只能调用你的 <code>pub</code> 接口</strong>——这恰好模拟了"外部使用者"的视角，逼你把模块边界设计干净。</p>
+<p>对自动驾驶，一个典型的集成测试是把<strong>感知输出 → 预测 → 规划</strong>串起来，喂一个构造好的场景，验证整条链路的输出合理：</p>
+<pre><code class="language-rust ignore">// tests/planning_pipeline.rs
+use my_av_stack::perception::Obstacle;
+use my_av_stack::prediction::predict_trajectories;
+use my_av_stack::planning::plan_trajectory;
+
+#[test]
+fn 前方静止障碍物时规划应减速或绕行() {
+    // 构造一个场景：正前方 15 米有一辆静止的车。
+    let obstacles = vec![Obstacle {
+        id: 1,
+        x: 15.0, y: 0.0,
+        vx: 0.0, vy: 0.0,
+        // ... 其余字段
+    }];
+
+    // 跑预测：静止车预测轨迹应基本原地不动。
+    let predictions = predict_trajectories(&amp;obstacles);
+
+    // 跑规划：自车当前 10 m/s 直行。
+    let ego_v = 10.0;
+    let traj = plan_trajectory(ego_v, &amp;predictions);
+
+    // 契约级断言：规划出的轨迹不能撞上那辆车。
+    // 我们不关心具体怎么绕，只关心"安全"这个不可谈判的性质。
+    let min_dist = traj.points.iter()
+        .map(|p| (p.x - 15.0).hypot(p.y - 0.0))
+        .fold(f64::INFINITY, f64::min);
+    assert!(min_dist &gt; 2.0, "轨迹逼近障碍物到 {:.2}m，不安全", min_dist);
+
+    // 且末端速度应低于初速——要么刹停要么减速绕行。
+    let end_v = traj.points.last().unwrap().v;
+    assert!(end_v &lt; ego_v, "面对前方障碍未减速，末速 {:.2}", end_v);
+}</code></pre>
+<p>集成测试的哲学和单元测试一脉相承：<strong>断言不可谈判的安全性质（不能撞、要减速），而不是某条具体轨迹</strong>。因为"怎么绕"是可以随算法优化变的，"不能撞"永远不能变。你的测试应该锁住后者、放开前者，否则每次算法改进都伴随一堆测试变红，团队很快就会习惯性地无视测试——那是最坏的结局。</p>
+<h2 id="基于属性的测试让机器帮你找反例"><a class="header" href="#基于属性的测试让机器帮你找反例">基于属性的测试：让机器帮你找反例</a></h2>
+<p>单元测试有个根本局限：<strong>你只能测你想得到的用例</strong>。但 bug 往往藏在你没想到的输入里——负的角度、超过 2π 的朝向、恰好在坐标轴上的退化情形。<strong>基于属性的测试</strong>（property-based testing，PBT）换了个思路：你不写"输入 3 得到 5"，而是声明一条<strong>对所有输入都该成立的性质</strong>，然后让框架<strong>随机生成成千上万个输入</strong>去试图证伪它。找到反例，它还会自动<strong>缩小</strong>（shrink）到最简的那个，直接甩你脸上。</p>
+<p>Rust 里最常用的是 <strong><code>proptest</code></strong>。加依赖：</p>
+<pre><code class="language-toml"># Cargo.toml
+[dev-dependencies]
+proptest = "1"
+</code></pre>
+<p>自动驾驶里 PBT 的黄金应用场景是<strong>坐标变换的往返等价（round-trip）</strong>——一个变换和它的逆，复合起来必须等于恒等。这是几何代码正确性的基石，而它天然适合表达成"对所有点都成立的性质"：</p>
+<pre><code class="language-rust ignore">use proptest::prelude::*;
+
+/// 车体系变回世界系（world_to_body 的逆）。
+fn body_to_world(bx: f64, by: f64, px: f64, py: f64, ptheta: f64) -&gt; (f64, f64) {
+    let c = ptheta.cos();
+    let s = ptheta.sin();
+    let wx = c * bx - s * by + px;
+    let wy = s * bx + c * by + py;
+    (wx, wy)
+}
+
+proptest! {
+    #[test]
+    fn 世界到车体再变回来应回到原点(
+        // 让 proptest 在合理范围内随机生成这些值，跑 256 组（默认）
+        wx in -1000.0f64..1000.0,
+        wy in -1000.0f64..1000.0,
+        px in -1000.0f64..1000.0,
+        py in -1000.0f64..1000.0,
+        ptheta in -10.0f64..10.0,   // 故意超出 [-pi, pi]，试探角度处理
+    ) {
+        let (bx, by) = world_to_body(wx, wy, px, py, ptheta);
+        let (wx2, wy2) = body_to_world(bx, by, px, py, ptheta);
+        // 往返后必须回到原点（容忍浮点误差）。
+        prop_assert!((wx - wx2).abs() &lt; 1e-6, "x 往返失配: {} vs {}", wx, wx2);
+        prop_assert!((wy - wy2).abs() &lt; 1e-6, "y 往返失配: {} vs {}", wy, wy2);
+    }
+}</code></pre>
+<p>这一个测试，等价于你手写几千个坐标点用例——而且是<strong>你根本想不到要写的那些</strong>（比如 <code>ptheta = 9.9</code> 这种超出常规范围的角度）。如果你的变换里藏着一个符号错误或角度归一化 bug，<code>proptest</code> 几乎必然会揪出来，并告诉你"当输入是 (0, 1, 0, 0, 3.14159...) 时失败"这样一个最小反例。</p>
+<p>PBT 特别适合表达的自动驾驶不变量还有很多，列几个让你有感觉：</p>
+<ul>
+<li><strong>控制器不变量</strong>：饱和后的输出永远在 <code>[-max, max]</code> 范围内，无论输入多离谱。</li>
+<li><strong>角度归一化</strong>：<code>normalize_angle</code> 的输出永远落在 <code>(-π, π]</code>，且对已经在范围内的输入是恒等的。</li>
+<li><strong>滤波器数值健康</strong>：无论喂什么合法观测，协方差矩阵始终保持对称。</li>
+<li><strong>轨迹的物理合理性</strong>：规划出的轨迹，相邻点的加速度永远不超过车辆物理上限。</li>
+</ul>
+<pre><code class="language-rust ignore">proptest! {
+    #[test]
+    fn 归一化后的角度必落在正负pi区间(a in -1000.0f64..1000.0) {
+        let n = normalize_angle(a);
+        prop_assert!(n &gt; -std::f64::consts::PI - 1e-9);
+        prop_assert!(n &lt;= std::f64::consts::PI + 1e-9);
+    }
+}</code></pre>
+<blockquote>
+<p><strong>中高级视角</strong>：PBT 不是要取代单元测试，而是补上它的盲区。单元测试擅长锁定<strong>具体的、你已知的关键案例</strong>（"这个 CVE 场景必须处理对"）；PBT 擅长在<strong>广阔的输入空间里扫雷</strong>，找你没想到的退化情形。几何和数值密集的自动驾驶代码，两者都该有。会用 proptest 测往返等价，是一个能立刻让面试官高看你的技能点。</p>
+</blockquote>
+<h2 id="录制回放测试自动驾驶测试的王牌"><a class="header" href="#录制回放测试自动驾驶测试的王牌">录制回放测试：自动驾驶测试的王牌</a></h2>
+<p>现在讲最重要的。前面所有测试都有一个共同的软肋：<strong>它们只能验证你想象中的世界</strong>。可自动驾驶的真正敌人是<strong>真实世界的复杂分布</strong>——那些你在办公室里永远编不出来的光影、遮挡、加塞、鬼探头。</p>
+<p><strong>录制回放测试</strong>（replay test / regression test）就是把 9.1 节讲的 record &amp; replay 变成自动化测试：<strong>用真实（或高质量仿真）采集的数据，作为回归测试的输入，确保你今天的改动没有把昨天修好的东西改坏。</strong> 这是自动驾驶测试的核心，没有之一。</p>
+<p>它的机制是这样的：</p>
+<ol>
+<li><strong>积累回放集</strong>。车队跑出来的数据里，那些<strong>难例</strong>（disengagement 现场、系统曾经犯错的片段、罕见构型）被挑出来，连同<strong>期望输出</strong>（人工标注的真值，或经过审核的正确结果），存成一批带时间戳的用例（就是 9.1 里的 mcap 片段）。</li>
+<li><strong>回放喂给算法</strong>。测试时，逐个用例把传感器数据按序喂给你的算法当前版本，收集它的输出。</li>
+<li><strong>和期望比对，算指标</strong>。逐帧对比"算法这次的输出"和"期望输出"，算出一组指标：感知的检测召回率/误检率、跟踪 ID 是否稳定、规划轨迹和人类驾驶的偏差……</li>
+<li><strong>卡阈值</strong>。任何一个关键指标相比基线<strong>退化超过阈值</strong>，测试失败，这个改动就不许合入。</li>
+</ol>
+<p>这套东西，<strong>就是你手边 <code>inf/</code> 那套流水线的使命</strong>。它把一批 testcase 批量喂给模型跑推理、产出结构化结果（<code>describe.json</code> / <code>messages.json</code> 那类），再转成统一格式（cvproto）交给评测环节打分。<strong>这不是玩具，这是数据闭环里"离线推理 + 评测"那一环的工业级引擎</strong>——是每天在 CI 里守着"改代码别改坏感知"这条防线的哨兵。</p>
+<p>用 Rust 搭一个最小的录制回放测试骨架，让你看清它的结构：</p>
+<pre><code class="language-rust ignore">// tests/replay_regression.rs
+use std::path::Path;
+
+/// 一个回放用例：一段真实数据 + 它的期望输出（真值）。
+struct ReplayCase {
+    name: &amp;'static str,
+    log_path: &amp;'static str,       // mcap 文件路径
+    baseline_metric: f64,          // 上一版本达到的指标（基线）
+    tolerance: f64,                // 允许退化的容差
+}
+
+/// 跑一个用例：回放数据、过算法、算指标。（此处为骨架，实际调用你的栈）
+fn run_case(case: &amp;ReplayCase) -&gt; f64 {
+    let frames = load_mcap(Path::new(case.log_path));   // 8.4 节的 mcap 读取
+    let mut hits = 0usize;
+    let mut total = 0usize;
+    for frame in frames {
+        // 把这一帧的传感器数据喂给被测算法
+        let output = my_av_stack::perception::detect(&amp;frame.sensor_data);
+        // 和这一帧标注的真值比对，累计命中
+        let (h, t) = evaluate_frame(&amp;output, &amp;frame.ground_truth);
+        hits += h;
+        total += t;
+    }
+    hits as f64 / total.max(1) as f64   // 例如：检测召回率
+}
+
+#[test]
+fn 感知在关键难例集上不得退化() {
+    let cases = [
+        ReplayCase {
+            name: "雨天逆光十字路口",
+            log_path: "testdata/rainy_intersection.mcap",
+            baseline_metric: 0.92,
+            tolerance: 0.02,
+        },
+        ReplayCase {
+            name: "隧道口强明暗变化",
+            log_path: "testdata/tunnel_exit.mcap",
+            baseline_metric: 0.88,
+            tolerance: 0.02,
+        },
+    ];
+
+    for case in &amp;cases {
+        let metric = run_case(case);
+        // 关键：只允许在容差内退化，否则这次改动就是回归，必须拦下。
+        assert!(
+            metric &gt;= case.baseline_metric - case.tolerance,
+            "用例[{}]召回率退化: 基线 {:.3}, 本次 {:.3}",
+            case.name, case.baseline_metric, metric,
+        );
+    }
+}</code></pre>
+<p>请体会这套设计的几个关键点：</p>
+<ul>
+<li><strong>基线 + 容差</strong>，而不是精确相等。感知/规划这种复杂系统，指标不可能每次一模一样（浮点、并行顺序都会造成微小抖动）。你锁的是"<strong>不许比上一版明显变差</strong>"，而不是"必须一字不差"。</li>
+<li><strong>它测的是分布，不是个例</strong>。一个覆盖了几千个真实难例的回放集，捕捉退化的能力远超任何手写单元测试——因为它面对的是真实世界的样本，而不是你办公室里的想象。</li>
+<li><strong>它是数据闭环的闭合点</strong>。车队采数据 → 挖难例 → 进回放集 → 每次提交都回归 → 发现退化 → 修 → 再进回放集。系统就是这样<strong>越测越强</strong>的。</li>
+</ul>
+<blockquote>
+<p><strong>真实项目里</strong>：一个成熟自动驾驶团队的 CI，每次合并请求都会触发<strong>几千到几万个片段的回放回归</strong>，可能跑在一个大集群上要几十分钟到几小时。这套基础设施的效率——回放跑多快、指标算多准、退化定位多方便——直接决定了团队的迭代速度。这正是 Rust 大展身手的地方：<strong>回放和评测是纯计算密集、要跑海量数据的离线任务，用 Rust 替掉原来的 Python 脚本，能拿到成倍的吞吐和确定性</strong>。你手边的 <code>inf/</code> 就是这条路径的真实产物。</p>
+</blockquote>
+<h2 id="场景测试与指标怎么给开得好不好打分"><a class="header" href="#场景测试与指标怎么给开得好不好打分">场景测试与指标：怎么给"开得好不好"打分</a></h2>
+<p>回放测试擅长感知/预测这种<strong>有明确真值</strong>的模块。但规划/控制的"好不好"没有唯一正确答案（一个路口有一百种合理的过法）。这时用<strong>闭环仿真场景测试</strong>：在 9.1 的仿真里放一个场景，让完整的自车栈去开，然后用一组<strong>指标</strong>给这次驾驶打分。核心指标分三大类，你要背下来：</p>
+<ul>
+<li><strong>安全（safety）</strong>：有没有碰撞（collision）？和其他物体的最小距离、最小 TTC（time-to-collision，碰撞时间）够不够？有没有闯出车道、逆行？——这类是<strong>红线</strong>，破了就是失败，不容妥协。</li>
+<li><strong>舒适（comfort）</strong>：加速度、加加速度（jerk，加速度的变化率）超没超过舒适阈值？急刹急打方向都会让乘客难受。一个不撞车但一路点头哈腰的系统，量产不了。</li>
+<li><strong>交规与合理性（compliance &amp; progress）</strong>：闯红灯没有？超速没有？该让行让了没有？以及——<strong>有没有把事办成</strong>（开到目的地了吗，还是怂在原地不敢动）？最后这条常被忽视：一个永远急刹不动的车"很安全"，但毫无用处。</li>
+</ul>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// 一次仿真跑完后，从轨迹历史里算出的评分。
+struct DriveMetrics {
+    collided: bool,          // 是否发生碰撞（红线）
+    min_ttc: f64,            // 最小碰撞时间（秒）
+    max_jerk: f64,           // 最大加加速度（舒适）
+    ran_red_light: bool,     // 是否闯红灯（交规）
+    reached_goal: bool,      // 是否到达目标（有效性）
+}
+
+#[test]
+fn 直行遇前车急刹场景应安全停车且不追尾() {
+    let scenario = Scenario::load("scenarios/lead_vehicle_hard_brake.yaml");
+    // 在 9.1 的仿真器里跑完整自车栈，返回逐步历史
+    let history = run_closed_loop(&amp;scenario, /* steps */ 400);
+    let m = evaluate_drive(&amp;history);
+
+    // 安全红线：绝不允许碰撞。
+    assert!(!m.collided, "发生追尾碰撞！");
+    // 安全裕度：全程 TTC 不得低于 1.5 秒。
+    assert!(m.min_ttc &gt; 1.5, "最小 TTC 仅 {:.2}s，过于危险", m.min_ttc);
+    // 舒适：紧急场景允许较大 jerk，但仍设上限防止过激。
+    assert!(m.max_jerk &lt; 10.0, "加加速度 {:.1} 过大，乘客体验差", m.max_jerk);
+    // 有效性：不能一慌就永远停着不动（此场景应停稳后择机恢复）。
+    // ……视场景定义补充
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="覆盖率代码覆盖率-vs-场景覆盖率"><a class="header" href="#覆盖率代码覆盖率-vs-场景覆盖率">覆盖率：代码覆盖率 vs 场景覆盖率</a></h2>
+<p>"我们测得够不够？"这个问题有两个完全不同的答案，别混为一谈：</p>
+<ul>
+<li><strong>代码覆盖率（code coverage）</strong>：跑测试时，你的代码有百分之多少的行/分支被执行过。Rust 里可以用 <code>cargo llvm-cov</code>（基于 LLVM 的插桩）来测。它回答的是"<strong>我有没有哪段代码从没被测到</strong>"。有用，但有天花板。</li>
+<li><strong>场景覆盖率（scenario coverage）</strong>：你的测试集覆盖了多少种<strong>真实世界的驾驶情形</strong>——各种天气、路口类型、交通参与者行为、极端构型。</li>
+</ul>
+<p>关键洞见，也是自动驾驶测试的一句行话：<strong>代码覆盖率 100% 不代表系统安全，场景覆盖率才是自动驾驶真正要爬的山。</strong> 你的代码可能每一行都被执行过，但你的测试从没见过"暴雨夜里一个穿黑衣服的行人推着没开灯的自行车横穿"这种构型——而这恰恰是会出事的地方。代码覆盖率是软件工程的通用指标，场景覆盖率才是这个行业的命门，且<strong>永远不可能真正达到 100%</strong>（真实世界的情形是无穷的）。这也正是域随机化和自动场景生成存在的意义：尽可能扩大场景覆盖。</p>
+<blockquote>
+<p><strong>面试题</strong>："代码覆盖率和场景覆盖率有什么区别，哪个对自动驾驶更重要？" 能清楚区分二者、并指出"高代码覆盖率是必要不充分条件，场景覆盖率永远无法穷尽、是长尾问题的本质"，就是一个漂亮的回答。</p>
+</blockquote>
+<h2 id="ci-中的仿真回归"><a class="header" href="#ci-中的仿真回归">CI 中的仿真回归</a></h2>
+<p>把上面这些串起来，就是一套现代自动驾驶的**持续集成（CI）**流程。每次有人提交代码，流水线自动跑：</p>
+<ol>
+<li><strong><code>cargo build</code> + <code>cargo clippy</code></strong>：编译过、静态检查过（Rust 的 <code>clippy</code> 能抓一堆潜在问题）。</li>
+<li><strong><code>cargo test</code></strong>：所有单元测试、集成测试、proptest 属性测试——<strong>秒级到分钟级</strong>，最快的一道闸门，跑不过直接打回。</li>
+<li><strong>录制回放回归</strong>：几千个真实片段过一遍，感知/预测指标不得退化——<strong>分钟级到小时级</strong>，可能跑在集群上。</li>
+<li><strong>闭环仿真场景套件</strong>：一批安全关键场景在仿真里跑闭环，安全指标不得破线。</li>
+<li>全绿，才允许合入主干。</li>
+</ol>
+<p>分层的意义是<strong>快速失败</strong>（fail fast）：便宜快的测试在前，贵慢的在后。一个坐标变换的低级错误，应该在第 2 步几秒内被 proptest 抓住，而不是耗到第 4 步跑了一小时仿真才发现。<strong>这就是为什么金字塔底座要宽</strong>。</p>
+<h2 id="确定性与可复现一切测试的地基"><a class="header" href="#确定性与可复现一切测试的地基">确定性与可复现：一切测试的地基</a></h2>
+<p>最后讲一个贯穿所有测试、却最容易被新手忽视的东西：<strong>确定性（determinism）</strong>。</p>
+<p>一个测试如果<strong>同样的输入，有时过有时不过</strong>（业界叫 flaky test，"薄脆测试"），那它比没有测试还糟——因为团队会开始不信任测试，红了就无脑重跑，直到某次真的 bug 也被当成"又抽风了"放过去。对赌人命的自动驾驶，这是绝对不能接受的。</p>
+<p>自动驾驶里破坏确定性的元凶有几个，你要能一眼认出：</p>
+<ul>
+<li><strong>随机数</strong>。感知里的采样、规划里的随机化搜索（如 RRT）、域随机化，全靠随机数。解法是<strong>固定随机种子（seed）</strong>——测试和回放时用同一个种子，随机序列就完全可复现。别让系统时间或 <code>/dev/urandom</code> 悄悄溜进你的算法。</li>
+<li><strong>多线程调度的不确定性</strong>。几十个模块并行跑，消息到达顺序、锁的竞争结果每次都可能不同。回放测试里，一个常见做法是<strong>用确定性调度</strong>——不按真实墙上时钟（wall clock）驱动，而是用<strong>逻辑时钟</strong>按录制的时间戳严格排序地喂数据，让整个系统的执行顺序在每次回放里都完全一致。</li>
+<li><strong>浮点的并行归约</strong>。多线程把一堆浮点数加起来，相加顺序不同，因舍入误差结果就有微小差异。要严格复现，得固定归约顺序，或用容差断言（这就是前面所有断言都用 <code>&lt; 1e-6</code> 而不是 <code>==</code> 的深层原因之一）。</li>
+</ul>
+<p>Rust 在这件事上帮了你大忙：<strong>它的所有权和借用系统在编译期就消灭了数据竞争</strong>（第 1.4 节讲过），这意味着你的并发代码不会因为"两个线程同时踩一块内存"而产生真正随机的、不可复现的垃圾结果。数据竞争是不确定性最恶劣的来源之一，而 Rust 直接把它挡在了门外。你仍然要管好随机种子和调度顺序，但至少最脏的那一类不确定性，编译器替你根除了。</p>
+<pre><code class="language-rust ignore">// 好习惯：测试和回放里，随机数发生器永远用固定种子构造。
+use rand::{SeedableRng, rngs::StdRng};
+
+fn make_rng() -&gt; StdRng {
+    // 固定种子 = 每次运行随机序列完全一致 = 可复现。
+    StdRng::seed_from_u64(42)
+}
+
+#[test]
+fn 随机搜索规划器在固定种子下结果可复现() {
+    let traj1 = plan_with_rng(&amp;scenario(), &amp;mut make_rng());
+    let traj2 = plan_with_rng(&amp;scenario(), &amp;mut make_rng());
+    // 同种子、同输入，必须得到逐字节一致的轨迹。
+    assert_eq!(traj1, traj2, "规划器不可复现，测试将变得不可信");
+}</code></pre>
+<blockquote>
+<p><strong>中高级视角</strong>：确定性不只是为了测试好过，它是<strong>事故可复盘</strong>的前提。真车出了问题，你想在办公室里用录下的数据 1:1 重现那个瞬间来定位原因。如果你的系统充满随机性和不确定调度，你就永远无法在实验室里重现现场——那 bug 就成了永远抓不住的幽灵。可复现性是自动驾驶工程的地基，这也是为什么 9.1 那个手写仿真器我坚持用<strong>固定步长</strong>。</p>
+</blockquote>
+<h2 id="小结"><a class="header" href="#小结">小结</a></h2>
+<ul>
+<li>自动驾驶的测试金字塔底座是<strong>单元测试</strong>，中间厚厚两层是本行业特色的<strong>录制回放回归</strong>与<strong>闭环仿真场景测试</strong>，顶端是昂贵的真车测试。</li>
+<li><strong>Rust 把测试做成语言一等公民</strong>：<code>#[cfg(test)]</code> 内联单元测试、<code>tests/</code> 目录集成测试，<code>cargo test</code> 开箱即用；测几何/数值函数时用<strong>近似断言</strong>，测有状态算法（控制器、滤波器）时<strong>测行为契约与不变量，而非魔法数字</strong>。</li>
+<li><strong><code>proptest</code> 基于属性的测试</strong>让机器随机扫雷，最典型的自动驾驶应用是<strong>坐标变换往返等价</strong>和<strong>控制器/角度不变量</strong>——它能找到你根本想不到的退化输入。</li>
+<li><strong>录制回放测试是自动驾驶测试的王牌</strong>：用真实难例数据 + 基线容差做回归，守住"改代码别改坏"这条防线；它是数据闭环的闭合点，也正是你手边 <code>inf/</code> 评测流水线的使命。</li>
+<li>规划/控制用<strong>闭环场景测试 + 三类指标</strong>（安全红线、舒适、交规与有效性）打分。</li>
+<li>区分<strong>代码覆盖率</strong>与<strong>场景覆盖率</strong>——后者才是自动驾驶真正爬不完的山。</li>
+<li>CI 里分层跑测试，<strong>快而便宜的在前，贵而慢的在后</strong>，快速失败。</li>
+<li><strong>确定性与可复现是一切测试的地基</strong>：固定随机种子、用逻辑时钟做确定性调度、用容差断言对付浮点；Rust 在编译期消灭数据竞争，替你根除了最恶劣的一类不确定性。</li>
+</ul>
+<p>下一节是第九部分的收官，也是最硬核的一节：当代码测得再好，它终究要跑在一块真实的车载芯片上、在实时约束下、承担着安全攸关的责任——我们来谈<strong>功能安全（ISO 26262）、SOTIF、实时性，以及 Rust 在其中的优势、陷阱与部署实践</strong>。</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../part9/simulation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../part9/safety.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../part9/simulation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../part9/safety.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

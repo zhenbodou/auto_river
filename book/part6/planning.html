@@ -1,0 +1,788 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN" class="rust" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>6.2 路径与轨迹规划 - Rust 智能驾驶开发：从小白到工程师</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="一本面向零基础读者、以 Rust 为主语言、系统讲解自动驾驶软件开发的实战教程。">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+        <!-- MathJax -->
+        <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "rust";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../preface.html">前言：这本书能带你到哪里</a></li><li class="chapter-item expanded affix "><a href="../how-to-use.html">如何使用本书</a></li><li class="chapter-item expanded affix "><li class="part-title">第一部分 · 认识智能驾驶</li><li class="chapter-item expanded "><a href="../part1/levels.html"><strong aria-hidden="true">1.</strong> 1.1 什么是自动驾驶：从 L0 到 L5</a></li><li class="chapter-item expanded "><a href="../part1/architecture.html"><strong aria-hidden="true">2.</strong> 1.2 一辆自动驾驶车的软件全景</a></li><li class="chapter-item expanded "><a href="../part1/pipeline.html"><strong aria-hidden="true">3.</strong> 1.3 感知—定位—预测—规划—控制 五大模块</a></li><li class="chapter-item expanded "><a href="../part1/why-rust.html"><strong aria-hidden="true">4.</strong> 1.4 为什么在智能驾驶里用 Rust</a></li><li class="chapter-item expanded "><a href="../part1/industry.html"><strong aria-hidden="true">5.</strong> 1.5 行业现状、岗位与技术栈地图</a></li><li class="chapter-item expanded affix "><li class="part-title">第二部分 · 面向智驾的 Rust 语言基础</li><li class="chapter-item expanded "><a href="../part2/setup.html"><strong aria-hidden="true">6.</strong> 2.1 搭建 Rust 开发环境</a></li><li class="chapter-item expanded "><a href="../part2/ownership.html"><strong aria-hidden="true">7.</strong> 2.2 所有权、借用与生命周期</a></li><li class="chapter-item expanded "><a href="../part2/traits.html"><strong aria-hidden="true">8.</strong> 2.3 类型系统、trait 与泛型</a></li><li class="chapter-item expanded "><a href="../part2/errors.html"><strong aria-hidden="true">9.</strong> 2.4 错误处理：Result、Option 与 anyhow</a></li><li class="chapter-item expanded "><a href="../part2/concurrency.html"><strong aria-hidden="true">10.</strong> 2.5 并发与异步：线程、channel、tokio</a></li><li class="chapter-item expanded "><a href="../part2/ecosystem.html"><strong aria-hidden="true">11.</strong> 2.6 智驾常用 crate 生态速览</a></li><li class="chapter-item expanded "><a href="../part2/performance-ffi.html"><strong aria-hidden="true">12.</strong> 2.7 性能工程、unsafe 与 C/C++ FFI</a></li><li class="chapter-item expanded affix "><li class="part-title">第三部分 · 传感器、坐标系与数据</li><li class="chapter-item expanded "><a href="../part3/sensors.html"><strong aria-hidden="true">13.</strong> 3.1 传感器全家福：相机、激光雷达、毫米波、IMU、GNSS</a></li><li class="chapter-item expanded "><a href="../part3/coordinates.html"><strong aria-hidden="true">14.</strong> 3.2 坐标系与刚体变换</a></li><li class="chapter-item expanded "><a href="../part3/time-sync.html"><strong aria-hidden="true">15.</strong> 3.3 时间戳、同步与数据流</a></li><li class="chapter-item expanded "><a href="../part3/data-model.html"><strong aria-hidden="true">16.</strong> 3.4 用 Rust 表达传感器数据</a></li><li class="chapter-item expanded "><a href="../part3/calibration.html"><strong aria-hidden="true">17.</strong> 3.5 传感器标定、运动补偿与在线健康监测</a></li><li class="chapter-item expanded affix "><li class="part-title">第四部分 · 感知</li><li class="chapter-item expanded "><a href="../part4/overview.html"><strong aria-hidden="true">18.</strong> 4.1 感知任务总览</a></li><li class="chapter-item expanded "><a href="../part4/image.html"><strong aria-hidden="true">19.</strong> 4.2 图像处理基础与 Rust 实现</a></li><li class="chapter-item expanded "><a href="../part4/inference.html"><strong aria-hidden="true">20.</strong> 4.3 深度学习推理：onnxruntime / tract / candle</a></li><li class="chapter-item expanded "><a href="../part4/pointcloud.html"><strong aria-hidden="true">21.</strong> 4.4 点云处理与激光雷达感知</a></li><li class="chapter-item expanded "><a href="../part4/tracking-fusion.html"><strong aria-hidden="true">22.</strong> 4.5 多目标跟踪与传感器融合</a></li><li class="chapter-item expanded "><a href="../part4/data-loop.html"><strong aria-hidden="true">23.</strong> 4.6 感知数据闭环与量产评测</a></li><li class="chapter-item expanded affix "><li class="part-title">第五部分 · 定位、建图与状态估计</li><li class="chapter-item expanded "><a href="../part5/kalman.html"><strong aria-hidden="true">24.</strong> 5.1 状态估计与卡尔曼滤波</a></li><li class="chapter-item expanded "><a href="../part5/localization.html"><strong aria-hidden="true">25.</strong> 5.2 定位：GNSS/IMU 组合导航与地图匹配</a></li><li class="chapter-item expanded "><a href="../part5/slam-hdmap.html"><strong aria-hidden="true">26.</strong> 5.3 SLAM 与高精地图概览</a></li><li class="chapter-item expanded affix "><li class="part-title">第六部分 · 预测与规划</li><li class="chapter-item expanded "><a href="../part6/prediction.html"><strong aria-hidden="true">27.</strong> 6.1 行为预测</a></li><li class="chapter-item expanded "><a href="../part6/planning.html" class="active"><strong aria-hidden="true">28.</strong> 6.2 路径与轨迹规划</a></li><li class="chapter-item expanded "><a href="../part6/decision.html"><strong aria-hidden="true">29.</strong> 6.3 决策与行为规划</a></li><li class="chapter-item expanded affix "><li class="part-title">第七部分 · 控制</li><li class="chapter-item expanded "><a href="../part7/vehicle-model.html"><strong aria-hidden="true">30.</strong> 7.1 车辆运动学与动力学模型</a></li><li class="chapter-item expanded "><a href="../part7/control.html"><strong aria-hidden="true">31.</strong> 7.2 横向与纵向控制：PID 到 MPC</a></li><li class="chapter-item expanded affix "><li class="part-title">第八部分 · 中间件与系统集成</li><li class="chapter-item expanded "><a href="../part8/middleware.html"><strong aria-hidden="true">32.</strong> 8.1 自动驾驶中间件全景</a></li><li class="chapter-item expanded "><a href="../part8/ros2-rclrs.html"><strong aria-hidden="true">33.</strong> 8.2 ROS 2 与 rclrs：用 Rust 写节点</a></li><li class="chapter-item expanded "><a href="../part8/zenoh-dds.html"><strong aria-hidden="true">34.</strong> 8.3 Zenoh、DDS 与零拷贝通信</a></li><li class="chapter-item expanded "><a href="../part8/messages.html"><strong aria-hidden="true">35.</strong> 8.4 消息定义与序列化</a></li><li class="chapter-item expanded "><a href="../part8/runtime-engineering.html"><strong aria-hidden="true">36.</strong> 8.5 运行时工程：背压、可观测性与资源预算</a></li><li class="chapter-item expanded affix "><li class="part-title">第九部分 · 仿真、测试与安全</li><li class="chapter-item expanded "><a href="../part9/simulation.html"><strong aria-hidden="true">37.</strong> 9.1 仿真：CARLA 与数据回放</a></li><li class="chapter-item expanded "><a href="../part9/testing.html"><strong aria-hidden="true">38.</strong> 9.2 测试策略：单元、集成与录制回放</a></li><li class="chapter-item expanded "><a href="../part9/safety.html"><strong aria-hidden="true">39.</strong> 9.3 功能安全、实时性与部署</a></li><li class="chapter-item expanded "><a href="../part9/cybersecurity.html"><strong aria-hidden="true">40.</strong> 9.4 汽车网络安全、供应链与安全 OTA</a></li><li class="chapter-item expanded "><a href="../part9/safety-case.html"><strong aria-hidden="true">41.</strong> 9.5 系统工程、安全论证与故障注入</a></li><li class="chapter-item expanded affix "><li class="part-title">第十部分 · 实战与职业</li><li class="chapter-item expanded "><a href="../part10/project.html"><strong aria-hidden="true">42.</strong> 10.1 实战项目：搭一个最小自动驾驶栈</a></li><li class="chapter-item expanded "><a href="../part10/career.html"><strong aria-hidden="true">43.</strong> 10.2 学习路线图与求职准备</a></li><li class="chapter-item expanded "><a href="../part10/glossary.html"><strong aria-hidden="true">44.</strong> 10.3 常见术语表</a></li><li class="chapter-item expanded "><a href="../part10/competency.html"><strong aria-hidden="true">45.</strong> 10.4 逐章能力验收与作品集证据</a></li><li class="chapter-item expanded "><a href="../part10/capstone.html"><strong aria-hidden="true">46.</strong> 10.5 中高级毕业项目：从最小栈到可评审系统</a></li><li class="chapter-item expanded affix "><li class="spacer"></li><li class="chapter-item expanded affix "><a href="../afterword.html">后记与延伸资源</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Rust 智能驾驶开发：从小白到工程师</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="62-路径与轨迹规划"><a class="header" href="#62-路径与轨迹规划">6.2 路径与轨迹规划</a></h1>
+<p>如果说预测是"猜别人要干嘛"，那规划（planning）就是"决定我自己要怎么走"。这是规划岗（planning engineer）的主战场，也是整本书里数学密度最高的一章。我不打算绕过任何硬骨头——A*、五次多项式、Frenet 坐标系，该推的公式推、该给的代码给。读完这一章，你手上会有几个能真的算出轨迹的 Rust 组件，脑子里会有一张"经典规划方法全景图"。深呼吸，我们开始。</p>
+<h2 id="先把规划这个词拆清楚三层"><a class="header" href="#先把规划这个词拆清楚三层">先把"规划"这个词拆清楚：三层</a></h2>
+<p>新人最容易混的一件事：<strong>"规划"不是一个算法，是一整层，内部还分三级</strong>。工业界几乎所有栈都是这个分层：</p>
+<ol>
+<li><strong>路由 / 全局路径（routing）</strong>：在<strong>道路网络</strong>（road graph）这个尺度上，从起点到终点选一条路线——"走三环还是走高架"。这一层跑在整张城市地图上，秒级甚至分钟级更新一次，本质是图搜索（Dijkstra/A*）。你手机导航干的就是这个。</li>
+<li><strong>行为决策（behavior）</strong>：在<strong>当前这段路 + 周围交通</strong>的尺度上，做<strong>离散决策</strong>——"跟车还是超车""让行还是通过""现在变道还是再等等"。这是下一章 6.3 的主题，输出的是约束和意图，不是具体轨迹。</li>
+<li><strong>运动规划 / 轨迹生成（motion planning）</strong>：在<strong>未来几秒、几十米</strong>的尺度上，把行为决策的意图落成一条<strong>平滑、安全、动力学可行</strong>的具体轨迹。这是本章的核心，几十毫秒出一次解。</li>
+</ol>
+<p>这三层是<strong>逐级细化</strong>的关系：路由说"往前走然后右转"，行为说"右转前要先减速让掉那个行人、并到右道"，运动规划说"这是未来 5 秒每 0.1 秒你该在的精确 (x, y, v, heading)"。本章聚焦第 1 和第 3 层（第 2 层单独成章）。</p>
+<h2 id="路径-vs-轨迹差一个时间差很多"><a class="header" href="#路径-vs-轨迹差一个时间差很多">路径 vs 轨迹：差一个"时间"，差很多</a></h2>
+<p>这是面试必问、新人必错的概念。</p>
+<ul>
+<li><strong>路径（path）</strong>：一条几何曲线，只有空间信息——<code>(x, y)</code> 的序列，或者参数曲线 <code>(x(s), y(s))</code>。它回答"走哪条线"，<strong>不回答"什么时候走到哪、走多快"</strong>。</li>
+<li><strong>轨迹（trajectory）</strong>：路径 + 时间维度——<code>(x(t), y(t))</code> 或者复用 1.3 节那个带 <code>t</code> 和 <code>v</code> 的 <code>TrajectoryPoint</code>。它回答"什么时刻在什么位置、多快"。</li>
+</ul>
+<p>为什么必须区分？因为<strong>同一条路径，配不同的速度剖面（velocity profile），是完全不同的驾驶行为</strong>。一条绕过前车的路径，你快速通过还是慢慢挪，安全性天差地别。控制模块（第七部分）要的是<strong>轨迹</strong>——它每个瞬间都得知道"此刻我该在哪、该多快"，才能算方向盘和油门。所以规划的最终产物一定是带时间的<strong>轨迹</strong>。</p>
+<p>工业界有两大流派处理这个问题：</p>
+<ul>
+<li><strong>路径-速度分解（path-velocity decomposition）</strong>：先规划一条路径（横向：往哪拐），再在这条路径上规划速度（纵向：多快走）。Apollo 的 EM Planner 就是这个思路。好处是把一个难的二维时空问题拆成两个一维问题，各个击破。</li>
+<li><strong>时空联合（spatio-temporal / lattice）</strong>：直接在 <code>(s, l, t)</code> 或 <code>(s, t)</code> 空间里一把梭，同时决定走位和速度。理论上更优（有些场景路径和速度耦合，分开会丢最优解），但计算量大。</li>
+</ul>
+<p>记住这个分野，后面 Frenet 和 lattice 会反复用到。</p>
+<h2 id="经典方法全景"><a class="header" href="#经典方法全景">经典方法全景</a></h2>
+<p>我把规划方法分成四大家族，逐个给你原理 + 代码。它们不是互斥的，真实系统往往组合使用（比如 Frenet 采样 + QP 优化）。</p>
+<h3 id="家族一图搜索graph-search"><a class="header" href="#家族一图搜索graph-search">家族一：图搜索（graph search）</a></h3>
+<p><strong>核心思想</strong>：把连续空间<strong>离散化成图</strong>（格子、路网节点），然后在图上找最短路。</p>
+<h4 id="dijkstra-与-a"><a class="header" href="#dijkstra-与-a">Dijkstra 与 A*</a></h4>
+<p>Dijkstra 你可能听过——从起点向外一圈圈"涨水"，涨到终点为止，保证找到最短路。它的问题是<strong>没有方向感</strong>：终点在东边，它也往西边使劲搜，浪费。</p>
+<p><strong>A*</strong> 是 Dijkstra 加了个"指南针"。它给每个节点一个评估函数：</p>
+<p>$$
+f(n) = g(n) + h(n)
+$$</p>
+<ul>
+<li><code>g(n)</code>：从起点到 <code>n</code> 的<strong>实际</strong>代价（已经走过的路）。</li>
+<li><code>h(n)</code>：从 <code>n</code> 到终点的<strong>估计</strong>代价（还要走多远的猜测），叫<strong>启发函数（heuristic）</strong>。</li>
+<li><code>f(n)</code>：这条路"总代价"的估计。A* 每次优先扩展 <code>f</code> 最小的节点。</li>
+</ul>
+<p>关键理论保证：只要 <code>h(n)</code> <strong>不高估</strong>真实剩余代价（这叫<strong>可采纳性 admissible</strong>），A* 就一定能找到最优解。而 <code>h</code> 越接近真实剩余代价，搜索越快、越"直奔目标"。在栅格地图上常用的启发函数：</p>
+<ul>
+<li><strong>曼哈顿距离</strong> <code>|dx| + |dy|</code>：只能上下左右走时用。</li>
+<li><strong>欧氏距离</strong> <code>sqrt(dx² + dy²)</code>：能任意方向走时用，永不高估（直线最短）。</li>
+<li><strong>对角距离（Chebyshev/octile）</strong>：能走八方向时用。</li>
+</ul>
+<p>下面是<strong>可运行</strong>的栅格 A*，用欧氏启发。注意 Rust 里用 <code>BinaryHeap</code> 做优先队列的经典技巧——因为它是<strong>大顶堆</strong>，我们要取最小 <code>f</code>，得把代价取反（<code>Reverse</code>）。</p>
+<pre><pre class="playground"><code class="language-rust">// Cargo.toml 无需额外依赖
+use std::collections::{BinaryHeap, HashMap};
+use std::cmp::Ordering;
+
+/// 栅格坐标
+type Cell = (i32, i32);
+
+/// 优先队列里的条目：按 f 排序（f 小的优先）
+#[derive(Copy, Clone, PartialEq)]
+struct Node {
+    f: f64,
+    g: f64,
+    cell: Cell,
+}
+impl Eq for Node {}
+impl PartialOrd for Node {
+    fn partial_cmp(&amp;self, other: &amp;Self) -&gt; Option&lt;Ordering&gt; {
+        // 注意：反向比较，让 BinaryHeap（大顶堆）弹出最小 f
+        other.f.partial_cmp(&amp;self.f)
+    }
+}
+impl Ord for Node {
+    fn cmp(&amp;self, other: &amp;Self) -&gt; Ordering {
+        self.partial_cmp(other).unwrap_or(Ordering::Equal)
+    }
+}
+
+pub struct Grid {
+    pub w: i32,
+    pub h: i32,
+    pub blocked: Vec&lt;bool&gt;, // 长度 w*h，true 表示障碍
+}
+impl Grid {
+    fn idx(&amp;self, c: Cell) -&gt; usize {
+        (c.1 * self.w + c.0) as usize
+    }
+    fn passable(&amp;self, c: Cell) -&gt; bool {
+        c.0 &gt;= 0 &amp;&amp; c.0 &lt; self.w &amp;&amp; c.1 &gt;= 0 &amp;&amp; c.1 &lt; self.h &amp;&amp; !self.blocked[self.idx(c)]
+    }
+    /// 八邻域
+    fn neighbors(&amp;self, c: Cell) -&gt; Vec&lt;(Cell, f64)&gt; {
+        const DIRS: [(i32, i32); 8] = [
+            (1, 0), (-1, 0), (0, 1), (0, -1),
+            (1, 1), (1, -1), (-1, 1), (-1, -1),
+        ];
+        DIRS.iter()
+            .map(|&amp;(dx, dy)| ((c.0 + dx, c.1 + dy), if dx != 0 &amp;&amp; dy != 0 { 1.4142 } else { 1.0 }))
+            .filter(|(nc, _)| self.passable(*nc))
+            .collect()
+    }
+}
+
+/// 欧氏距离启发函数（可采纳：直线是最短的，永不高估）
+fn heuristic(a: Cell, b: Cell) -&gt; f64 {
+    (((a.0 - b.0).pow(2) + (a.1 - b.1).pow(2)) as f64).sqrt()
+}
+
+/// A* 搜索，返回从 start 到 goal 的路径（含两端），无解返回 None
+pub fn astar(grid: &amp;Grid, start: Cell, goal: Cell) -&gt; Option&lt;Vec&lt;Cell&gt;&gt; {
+    let mut open = BinaryHeap::new();
+    let mut g_score: HashMap&lt;Cell, f64&gt; = HashMap::new();
+    let mut came_from: HashMap&lt;Cell, Cell&gt; = HashMap::new();
+
+    g_score.insert(start, 0.0);
+    open.push(Node { f: heuristic(start, goal), g: 0.0, cell: start });
+
+    while let Some(Node { g, cell, .. }) = open.pop() {
+        if cell == goal {
+            // 回溯重建路径
+            let mut path = vec![cell];
+            let mut cur = cell;
+            while let Some(&amp;prev) = came_from.get(&amp;cur) {
+                path.push(prev);
+                cur = prev;
+            }
+            path.reverse();
+            return Some(path);
+        }
+        // 惰性删除：如果这个节点已经有更优的 g，跳过（避免重复扩展）
+        if g &gt; *g_score.get(&amp;cell).unwrap_or(&amp;f64::INFINITY) {
+            continue;
+        }
+        for (nc, cost) in grid.neighbors(cell) {
+            let tentative = g + cost;
+            if tentative &lt; *g_score.get(&amp;nc).unwrap_or(&amp;f64::INFINITY) {
+                came_from.insert(nc, cell);
+                g_score.insert(nc, tentative);
+                open.push(Node { f: tentative + heuristic(nc, goal), g: tentative, cell: nc });
+            }
+        }
+    }
+    None // 开集耗尽仍未到达
+}
+
+fn main() {
+    // 10x10 网格，中间竖一堵墙，留个豁口
+    let mut blocked = vec![false; 100];
+    for y in 0..8 {
+        blocked[(y * 10 + 5) as usize] = true; // x=5 这一列 y=0..8 是墙
+    }
+    let grid = Grid { w: 10, h: 10, blocked };
+    match astar(&amp;grid, (0, 0), (9, 9)) {
+        Some(path) =&gt; {
+            println!("找到路径，长度 {} 步：", path.len());
+            for c in &amp;path {
+                print!("({},{}) ", c.0, c.1);
+            }
+            println!();
+        }
+        None =&gt; println!("无解"),
+    }
+}</code></pre></pre>
+<p>跑起来你会看到 A* 聪明地绕过墙、从下方豁口穿过去。<strong>这就是全局路由那一层的核心引擎</strong>——把城市路网当成图，节点是路口、边是道路段、边权是"这段路预计要开多久"，A* 一跑就是导航路线。</p>
+<blockquote>
+<p><strong>面试题</strong>：A* 的启发函数如果<strong>高估</strong>了剩余代价会怎样？
+<strong>答</strong>：失去最优性保证——它可能过早地"扑向"目标而错过真正的最短路，返回一条次优路径。但换来的是搜得更快（扩展节点更少）。工程上有时故意用"加权 A*"（<code>f = g + w·h, w&gt;1</code>）牺牲一点最优性换速度，这在实时系统里是常见交易。</p>
+</blockquote>
+<h4 id="hybrid-a给泊车用的考虑车头朝向的-a"><a class="header" href="#hybrid-a给泊车用的考虑车头朝向的-a">Hybrid A*：给泊车用的"考虑车头朝向"的 A*</a></h4>
+<p>普通栅格 A* 有个硬伤：它产生的路径是"格子到格子"的折线，<strong>忽略了车辆的运动学约束</strong>——车不能原地平移、不能瞬间掉头，有最小转弯半径。让车按 A* 的锯齿路径走，方向盘得抽风。</p>
+<p><strong>Hybrid A*</strong>（混合 A*）是泊车、窄路掉头这类<strong>低速、需精确操作</strong>场景的王者。它的核心改动：</p>
+<ul>
+<li><strong>状态多一维朝向</strong>：节点不再是 <code>(x, y)</code>，而是 <code>(x, y, θ)</code>——连续的位置和朝向。</li>
+<li><strong>扩展用运动学模型</strong>：不是"跳到相邻格子"，而是<strong>用自行车模型（bicycle model，第七部分详解）以几个离散的转向角向前滚一小段</strong>，得到的下一个状态是<strong>连续</strong>的（落在格子内部，不吸附到格心）——"hybrid"就是指状态连续、但仍用栅格做剪枝去重。</li>
+<li><strong>两个启发函数取最大</strong>：一个是"不考虑障碍、但考虑运动学"的 Reeds-Shepp 曲线长度（车实际能怎么走），一个是"考虑障碍、但不考虑运动学"的栅格 Dijkstra 距离。两者取 max，兼顾"车走得动"和"绕得开"。</li>
+</ul>
+<p>Hybrid A* 产出的路径<strong>天生满足最小转弯半径</strong>，方向盘打得动，泊车能一把入库或规整地揉库。完整实现较长（要引入自行车模型和 Reeds-Shepp 曲线），这里给你扩展节点的骨架，建立直觉：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// 连续状态：位置 + 朝向
+#[derive(Clone, Copy)]
+struct SE2 { x: f64, y: f64, theta: f64 }
+
+/// 用自行车模型前滚一步：以转向角 steer、步长 ds 前进
+fn kinematic_step(s: SE2, steer: f64, ds: f64, wheelbase: f64) -&gt; SE2 {
+    // 自行车模型：航向变化 = 前进距离 / 转弯半径, 转弯半径 = L / tan(steer)
+    let dtheta = ds * steer.tan() / wheelbase;
+    SE2 {
+        x: s.x + ds * s.theta.cos(),
+        y: s.y + ds * s.theta.sin(),
+        theta: s.theta + dtheta,
+    }
+}
+
+/// 扩展：对几个离散转向角各前滚一步，得到连续的后继状态
+fn expand(s: SE2, wheelbase: f64) -&gt; Vec&lt;SE2&gt; {
+    const STEERS: [f64; 5] = [-0.5, -0.25, 0.0, 0.25, 0.5]; // 几档方向盘
+    const DS: f64 = 0.8; // 每步前进 0.8 m
+    STEERS.iter().map(|&amp;st| kinematic_step(s, st, DS, wheelbase)).collect()
+    // 真实实现里：把 (x,y,theta) 量化到栅格做 visited 去重，
+    // 代价里加"倒车惩罚""转向变化惩罚"，启发用 Reeds-Shepp + 栅格 Dijkstra 取 max
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="家族二采样sampling-based"><a class="header" href="#家族二采样sampling-based">家族二：采样（sampling-based）</a></h3>
+<p>图搜索在高维空间会爆炸（状态维度一多，格子数指数增长）。<strong>采样法</strong>换个思路：<strong>不系统地铺满整个空间，而是随机撒点、连成树，撞运气般地探到目标</strong>。</p>
+<ul>
+<li>
+<p><strong>RRT（Rapidly-exploring Random Tree，快速探索随机树）</strong>：从起点长一棵树。每轮在空间里随机采一个点，找树上离它最近的节点，朝它伸一小步（如果不撞障碍），把新节点接上树。树会"贪婪地"向未探索区域扩张，很快铺满空间，直到碰到目标附近。优点是<strong>天然处理高维和复杂约束</strong>、实现简单、能快速找到<strong>一条</strong>可行解。缺点是那条解<strong>又丑又不最优</strong>（随机的锯齿路径），需要后处理平滑。</p>
+</li>
+<li>
+<p><strong>RRT*</strong>：RRT 的最优化版本。多做两件事——新节点接入时<strong>在邻域里选代价最小的父节点</strong>（choose parent），接入后<strong>尝试用新节点作为跳板给邻居重新布线</strong>（rewire）降低它们的代价。随着采样数增加，RRT* 的解<strong>渐近收敛到最优</strong>。代价是慢一些。</p>
+</li>
+</ul>
+<p>采样法在自动驾驶里不如 Frenet + 优化主流（车道结构化环境更适合后者），但在<strong>非结构化场景</strong>（开阔停车场、越野、狭窄工地）很有价值——那里没有车道线可依附，RRT 这种"不挑食"的方法反而好使。RRT 扩展一步的核心逻辑：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// RRT 单步扩展的核心：随机采样 → 找最近 → 朝它伸一步
+fn rrt_extend(tree: &amp;mut Vec&lt;(f64, f64)&gt;, parent: &amp;mut Vec&lt;usize&gt;,
+              sample: (f64, f64), step: f64,
+              collision_free: impl Fn((f64, f64), (f64, f64)) -&gt; bool) {
+    // 1. 找树上离 sample 最近的节点
+    let (nearest_i, &amp;near) = tree.iter().enumerate()
+        .min_by(|(_, a), (_, b)| {
+            let da = (a.0 - sample.0).powi(2) + (a.1 - sample.1).powi(2);
+            let db = (b.0 - sample.0).powi(2) + (b.1 - sample.1).powi(2);
+            da.partial_cmp(&amp;db).unwrap()
+        }).unwrap();
+    // 2. 朝 sample 方向伸 step 距离
+    let (dx, dy) = (sample.0 - near.0, sample.1 - near.1);
+    let d = (dx * dx + dy * dy).sqrt().max(1e-9);
+    let new = (near.0 + step * dx / d, near.1 + step * dy / d);
+    // 3. 不撞障碍才接上树
+    if collision_free(near, new) {
+        tree.push(new);
+        parent.push(nearest_i);
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="家族三曲线拟合curve-generation"><a class="header" href="#家族三曲线拟合curve-generation">家族三：曲线拟合（curve generation）</a></h3>
+<p>图搜索和采样给的是<strong>离散折线</strong>，不够光滑，车开着颠。曲线家族反过来：<strong>用一个光滑的参数函数直接描述轨迹</strong>，光滑性由数学结构保证。</p>
+<ul>
+<li><strong>多项式曲线</strong>：用 <code>x(t)</code>、<code>y(t)</code> 各是一个时间的多项式。想控制到几阶导数连续（位置、速度、加速度、加加速度 jerk），就用几次多项式。这是本节的重头戏，下面详讲。</li>
+<li><strong>样条（spline）</strong>：分段多项式，在接缝处保证连续性（如三次样条保证到二阶导连续）。适合把 A* 的折线路点平滑成能开的曲线。</li>
+<li><strong>贝塞尔曲线（Bézier）</strong>：用几个控制点定义，曲线一定落在控制点的凸包内——这个性质在<strong>保证不越界</strong>时很有用。工业界画车道、平滑路径常用。</li>
+</ul>
+<h4 id="重头戏五次多项式生成横向轨迹"><a class="header" href="#重头戏五次多项式生成横向轨迹">重头戏：五次多项式生成横向轨迹</a></h4>
+<p>这是规划工程师的<strong>基本功中的基本功</strong>，请务必吃透。场景：车要平滑地变道，或从当前横向位置回到车道中心。我们希望这个横向运动<strong>又快又舒适</strong>——舒适意味着加速度不能突变（不然乘客被甩），也就是要控制到<strong>加速度连续</strong>。</p>
+<p>数学上，"位置、速度、加速度"三个量在<strong>起点和终点</strong>都要满足给定条件，一共 <strong>6 个边界条件</strong>。要精确满足 6 个约束，多项式就需要 <strong>6 个系数</strong>——正好是一个<strong>五次多项式（quintic polynomial）</strong>：</p>
+<p>$$
+l(t) = c_0 + c_1 t + c_2 t^2 + c_3 t^3 + c_4 t^4 + c_5 t^5
+$$</p>
+<p>这里 <code>l</code> 是横向偏移（后面 Frenet 里就是那个 <code>l</code>），<code>t</code> 是时间。它的一阶、二阶导（横向速度、加速度）：</p>
+<p>$$
+\begin{aligned}
+\dot l(t) &amp;= c_1 + 2c_2 t + 3c_3 t^2 + 4c_4 t^3 + 5c_5 t^4 \
+\ddot l(t) &amp;= 2c_2 + 6c_3 t + 12c_4 t^2 + 20c_5 t^3
+\end{aligned}
+$$</p>
+<p><strong>边界条件</strong>：给定起点 <code>t=0</code> 的 <code>(l_0, \dot l_0, \ddot l_0)</code> 和终点 <code>t=T</code> 的 <code>(l_T, \dot l_T, \ddot l_T)</code>。</p>
+<p>在 <code>t=0</code> 处，多项式的低阶系数<strong>直接就是初始条件</strong>（把 <code>t=0</code> 代进去，高次项全归零）：</p>
+<p>$$
+c_0 = l_0, \quad c_1 = \dot l_0, \quad c_2 = \frac{\ddot l_0}{2}
+$$</p>
+<p>漂亮，一半系数白送。剩下 <code>c_3, c_4, c_5</code> 由终点 3 个条件确定。把 <code>t=T</code> 代入 <code>l, \dot l, \ddot l</code> 三个式子，移项后得到一个 3×3 线性方程组：</p>
+<h1 bmatrix="">$$
+\begin{bmatrix}
+T^3 &amp; T^4 &amp; T^5 \
+3T^2 &amp; 4T^3 &amp; 5T^4 \
+6T &amp; 12T^2 &amp; 20T^3
+\end{bmatrix}
+\begin{bmatrix} c_3 \ c_4 \ c_5 \end</h1>
+<p>\begin{bmatrix}
+l_T - (c_0 + c_1 T + c_2 T^2) \
+\dot l_T - (c_1 + 2c_2 T) \
+\ddot l_T - 2c_2
+\end{bmatrix}
+$$</p>
+<p>解这个 3×3 就得到全部系数。这个矩阵有解析逆，但直接手解容易错，我们在代码里用克拉默法则（Cramer's rule）或直接写出解析解。下面是<strong>可运行</strong>实现：</p>
+<pre><pre class="playground"><code class="language-rust">// Cargo.toml 无需额外依赖
+
+/// 五次多项式，存 6 个系数
+#[derive(Debug, Clone, Copy)]
+pub struct Quintic {
+    c: [f64; 6],
+}
+
+impl Quintic {
+    /// 由起点/终点的 (位置, 速度, 加速度) 和总时长 T 求解系数
+    pub fn new(
+        l0: f64, dl0: f64, ddl0: f64, // 起点
+        lt: f64, dlt: f64, ddlt: f64, // 终点
+        t: f64,
+    ) -&gt; Self {
+        // 前三个系数直接来自起点条件
+        let c0 = l0;
+        let c1 = dl0;
+        let c2 = ddl0 / 2.0;
+
+        let t2 = t * t;
+        let t3 = t2 * t;
+        let t4 = t3 * t;
+        let t5 = t4 * t;
+
+        // 右端向量 b：终点条件减去低阶项的贡献
+        let b0 = lt - (c0 + c1 * t + c2 * t2);
+        let b1 = dlt - (c1 + 2.0 * c2 * t);
+        let b2 = ddlt - 2.0 * c2;
+
+        // 系数矩阵 A（就是上面推导那个 3x3），解 A [c3 c4 c5]^T = b
+        // 这里用解析解（对该结构矩阵求逆的已知结果），数值稳定且快
+        let c3 = (10.0 * b0 / t3) - (4.0 * b1 / t2) + (0.5 * b2 / t);
+        let c4 = (-15.0 * b0 / t4) + (7.0 * b1 / t3) - (1.0 * b2 / t2);
+        let c5 = (6.0 * b0 / t5) - (3.0 * b1 / t4) + (0.5 * b2 / t3);
+
+        Quintic { c: [c0, c1, c2, c3, c4, c5] }
+    }
+
+    /// 位置
+    pub fn pos(&amp;self, t: f64) -&gt; f64 {
+        let c = &amp;self.c;
+        c[0] + c[1] * t + c[2] * t.powi(2) + c[3] * t.powi(3) + c[4] * t.powi(4) + c[5] * t.powi(5)
+    }
+    /// 速度（一阶导）
+    pub fn vel(&amp;self, t: f64) -&gt; f64 {
+        let c = &amp;self.c;
+        c[1] + 2.0 * c[2] * t + 3.0 * c[3] * t.powi(2) + 4.0 * c[4] * t.powi(3) + 5.0 * c[5] * t.powi(4)
+    }
+    /// 加速度（二阶导）
+    pub fn acc(&amp;self, t: f64) -&gt; f64 {
+        let c = &amp;self.c;
+        2.0 * c[2] + 6.0 * c[3] * t + 12.0 * c[4] * t.powi(2) + 20.0 * c[5] * t.powi(3)
+    }
+    /// 加加速度 jerk（三阶导，衡量舒适度）
+    pub fn jerk(&amp;self, t: f64) -&gt; f64 {
+        let c = &amp;self.c;
+        6.0 * c[3] + 24.0 * c[4] * t + 60.0 * c[5] * t.powi(2)
+    }
+}
+
+fn main() {
+    // 场景：车当前偏离车道中心 l=3.5m（在左车道），速度和加速度都为 0（横向静止），
+    // 目标 2 秒内平滑回到中心 l=0，且到达时横向速度、加速度都为 0（稳稳停在中心）
+    let q = Quintic::new(3.5, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0);
+    println!(" t     l       dl      ddl     jerk");
+    let mut t = 0.0;
+    while t &lt;= 2.0 + 1e-9 {
+        println!("{:.1}  {:6.3}  {:6.3}  {:6.3}  {:6.3}",
+                 t, q.pos(t), q.vel(t), q.acc(t), q.jerk(t));
+        t += 0.25;
+    }
+    // 验证：t=0 时 l=3.5, dl=0, ddl=0；t=2 时 l≈0, dl≈0, ddl≈0
+}</code></pre></pre>
+<p>跑出来你会看到 <code>l</code> 从 3.5 平滑地、S 形地过渡到 0，中间横向速度先增后减、加速度两头为零——<strong>这就是一次舒适的变道横向运动</strong>。把终点 <code>l_T</code> 改成另一条车道的中心，就是变道；把它设成 0，就是"回正到车道中心"。<strong>五次多项式之所以是横向规划的默认选择，就因为它用最低的阶数精确满足了"两端位置/速度/加速度全指定"这 6 个舒适性约束。</strong></p>
+<blockquote>
+<p><strong>中高级视角</strong>：为什么横向用<strong>五次</strong>，纵向（速度规划）却常用<strong>四次</strong>？因为纵向我们通常<strong>不关心终点到达的精确位置</strong>（你不会要求"5 秒后必须恰好在 s=50.0 米"），只关心终点的<strong>速度和加速度</strong>（想巡航到某个目标速度）。少一个位置约束就少一个边界条件，5 个约束对应 4 次多项式。这个"按你真正在乎的边界条件数选多项式阶数"的思维，比记住"横向五次纵向四次"这个结论重要得多。</p>
+</blockquote>
+<h3 id="家族四优化optimization把规划写成一道数学题"><a class="header" href="#家族四优化optimization把规划写成一道数学题">家族四：优化（optimization）——把规划写成一道数学题</a></h3>
+<p>前面三家各有各的味道，但最能代表现代规划的，是把整件事<strong>表述成一个带约束的优化问题</strong>：</p>
+<p>$$
+\min_{\text{trajectory}} ; J(\text{trajectory}) \quad \text{s.t. 约束}
+$$</p>
+<p><strong>代价函数 <code>J</code></strong> 是各种目标的加权和，典型三块：</p>
+<p>$$
+J = w_{\text{smooth}} \underbrace{\int (\ddot l^2 + \dddot l^2),dt}<em>{\text{平滑/舒适}} + w</em>{\text{ref}} \underbrace{\int (l - l_{\text{ref}})^2 dt}<em>{\text{贴合参考线/效率}} + w</em>{\text{safe}} \underbrace{\sum \text{离障碍物的惩罚}}_{\text{安全}}
+$$</p>
+<ul>
+<li><strong>平滑项</strong>：惩罚大的加速度和 jerk——坐着舒服、车辆动力学吃得消。</li>
+<li><strong>参考项</strong>：惩罚偏离参考线（车道中心）或目标速度——别没事乱拐、别磨蹭。</li>
+<li><strong>安全项</strong>：离障碍物越近惩罚越大——别贴着别人开。</li>
+</ul>
+<p><strong>约束</strong>则是硬性的：不能撞（碰撞约束）、方向盘打得过来（曲率约束）、加速度别超过轮胎抓地极限（动力学约束）、别开出路面（边界约束）。</p>
+<p>当代价函数是<strong>二次型</strong>、约束是<strong>线性</strong>时，这个优化就是一个<strong>二次规划（Quadratic Programming, QP）</strong>——凸优化里性质最好、求解最快的一类，有成熟的数值求解器（OSQP、qpOASES 等），毫秒级出解，这正是实时规划所需要的。Apollo 的路径优化、速度优化都归结成 QP。</p>
+<p>工业界两条著名路线：</p>
+<ul>
+<li><strong>Lattice Planner（网格/采样式规划）</strong>：不直接解优化，而是<strong>撒一大把候选轨迹</strong>（用不同终点条件生成一堆五次/四次多项式），对每条算代价 <code>J</code>，<strong>选代价最低且无碰撞的那条</strong>。本质是"采样 + 打分"，简单、鲁棒、易调、天然多模态。缺点是解的质量受限于你撒的候选密度。</li>
+<li><strong>EM Planner / 迭代优化式</strong>：Apollo 的经典方案，用<strong>路径-速度分解</strong>，路径和速度各自迭代地做"动态规划找粗解 + 二次规划精修"（DP 提供一个凸的可行域，QP 在里面求光滑最优）。质量更高但更复杂。</li>
+</ul>
+<p>下面给一个<strong>极简 lattice planner</strong> 的骨架，把"多项式生成 + 代价评估 + 选优"串起来，你能直接看懂前面所有零件怎么组装：</p>
+<pre><code class="language-rust ignore">/// 一条候选轨迹及其代价
+struct Candidate {
+    lat: Quintic,       // 横向运动（复用上面的五次多项式）
+    target_l: f64,      // 终点横向偏移
+    cost: f64,
+}
+
+/// 极简 lattice：对一组候选终点横向位置各生成一条五次轨迹，打分选最优
+fn lattice_plan(
+    l0: f64, dl0: f64, ddl0: f64, // 当前横向状态
+    obstacles_l: &amp;[f64],          // 障碍物在参考线横向的占据位置（简化）
+    horizon: f64,
+) -&gt; Option&lt;Quintic&gt; {
+    // 候选终点：车道中心及左右微调，覆盖"回中心/微避让"等模态
+    let target_ls = [-1.0, -0.5, 0.0, 0.5, 1.0];
+    let mut best: Option&lt;Candidate&gt; = None;
+
+    for &amp;lt in &amp;target_ls {
+        // 终点都要求横向速度、加速度为 0（稳定收敛）
+        let q = Quintic::new(l0, dl0, ddl0, lt, 0.0, 0.0, horizon);
+
+        // 采样若干时刻，累加代价
+        let mut cost = 0.0;
+        let mut collision = false;
+        let mut t = 0.0;
+        while t &lt;= horizon + 1e-9 {
+            let l = q.pos(t);
+            // 平滑代价：加速度平方
+            cost += q.acc(t).powi(2) * 0.1;
+            // 参考代价：偏离车道中心 (l=0) 的惩罚
+            cost += l.powi(2) * 1.0;
+            // 安全：离任何障碍横向太近就判碰撞
+            for &amp;ol in obstacles_l {
+                if (l - ol).abs() &lt; 1.0 {
+                    collision = true;
+                }
+            }
+            t += 0.2;
+        }
+        if collision {
+            continue; // 硬约束：撞了直接丢弃
+        }
+        if best.as_ref().map_or(true, |b| cost &lt; b.cost) {
+            best = Some(Candidate { lat: q, target_l: lt, cost });
+        }
+    }
+    best.map(|b| b.lat)
+}</code></pre>
+<p>这就是一个<strong>能跑通的最小轨迹规划器</strong>：生成一批候选、算代价、避碰、选优。工业级的无非是把它做厚——候选采样更密、代价项更全（加纵向、加时间维）、约束更严（动力学）、求解从"暴力选优"换成 QP。但<strong>骨架就是这个骨架</strong>。</p>
+<h2 id="frenet-坐标系现代规划的地基"><a class="header" href="#frenet-坐标系现代规划的地基">Frenet 坐标系：现代规划的地基</a></h2>
+<p>现在讲这一章、乃至整个规划领域<strong>最重要</strong>的一个思想。前面 lattice 里我一直用 <code>l</code>（横向偏移）而不是 <code>y</code>，A* 里用 <code>s</code>（弧长），这不是随手写的——它们来自 <strong>Frenet 坐标系（Frenet frame）</strong>，也叫 <strong>SL 坐标系</strong>。</p>
+<h3 id="问题出在哪"><a class="header" href="#问题出在哪">问题出在哪</a></h3>
+<p>在笛卡尔坐标 <code>(x, y)</code> 里描述"沿车道行驶"极其别扭。车道是弯的，"车道中心"是一条曲线，"离中心多远""沿车道走了多远"这些<strong>规划真正关心的量</strong>，在 <code>(x, y)</code> 里都得靠复杂的几何计算才能得到。弯道上"保持车道中心"意味着 <code>x</code> 和 <code>y</code> 同时按某种耦合方式变化——恶心。</p>
+<h3 id="frenet-的解法换一个跟着路走的坐标系"><a class="header" href="#frenet-的解法换一个跟着路走的坐标系">Frenet 的解法：换一个"跟着路走"的坐标系</a></h3>
+<p>Frenet 坐标系<strong>沿着参考线（reference line，通常是车道中心线）建立</strong>，用两个量描述任意位置：</p>
+<ul>
+<li><strong><code>s</code>（纵向，longitudinal）</strong>：沿参考线走过的<strong>弧长</strong>——"我沿着这条路开了多远"。</li>
+<li><strong><code>l</code>（横向，lateral，也写作 <code>d</code>）</strong>：垂直于参考线的<strong>横向偏移</strong>——"我偏离中心线多远"，左正右负（或反之，约定即可）。</li>
+</ul>
+<p>这一换，奇迹发生了：</p>
+<ul>
+<li><strong>"沿车道行驶"变成 <code>l ≈ 0</code> 且 <code>s</code> 增大</strong>——无论路多弯，在 Frenet 里都是"横向不动、纵向前进"，跟直路一模一样。</li>
+<li><strong>纵向和横向解耦了</strong>：<code>s</code> 管"快慢"（速度规划、跟车、红灯停车），<code>l</code> 管"走位"（变道、避让）。前面"路径-速度分解"能成立，正是因为 Frenet 把二维耦合问题拆成了两个独立的一维问题。</li>
+<li><strong>五次多项式直接用在 <code>l(t)</code> 上</strong>——我们前面那个"从 3.5 平滑回到 0"的例子，就是 Frenet 下的横向规划。障碍物、目标车道、避让边界，全都投影成 <code>(s, l)</code>，规划在这个"拉直了的路"上进行，算完再转回 <code>(x, y)</code> 交给控制。</li>
+</ul>
+<p><strong>这就是为什么 Frenet 是现代规划的地基</strong>：它把"在弯曲车道上规划"这个难题，变成了"在一条直路上规划"这个简单题。</p>
+<h3 id="坐标转换cartesian--frenet"><a class="header" href="#坐标转换cartesian--frenet">坐标转换：Cartesian ↔ Frenet</a></h3>
+<p>核心是围绕参考线做投影。给定参考线（一串带累积弧长的点），把世界坐标点 <code>(x, y)</code> 转成 <code>(s, l)</code>：</p>
+<ol>
+<li>在参考线上找<strong>离 <code>(x, y)</code> 最近的点</strong>，它的弧长就是 <code>s</code>。</li>
+<li><code>(x, y)</code> 到那个最近点的距离就是 <code>|l|</code>，符号由"在参考线左侧还是右侧"决定（用叉积判断）。</li>
+</ol>
+<p>反过来 <code>(s, l) → (x, y)</code>：在参考线上找到弧长 <code>s</code> 的点和该处的切向/法向，沿法向偏移 <code>l</code> 即可。下面是<strong>可运行</strong>实现（参考线用点列 + 累积弧长表示，复用上一章 <code>Centerline</code> 的思路）：</p>
+<pre><pre class="playground"><code class="language-rust">// Cargo.toml 无需额外依赖
+
+pub struct ReferenceLine {
+    pts: Vec&lt;(f64, f64)&gt;, // 参考线采样点（车道中心线）
+    s: Vec&lt;f64&gt;,          // 累积弧长
+}
+
+impl ReferenceLine {
+    pub fn new(pts: Vec&lt;(f64, f64)&gt;) -&gt; Self {
+        let mut s = vec![0.0];
+        for i in 1..pts.len() {
+            let d = ((pts[i].0 - pts[i - 1].0).powi(2)
+                   + (pts[i].1 - pts[i - 1].1).powi(2)).sqrt();
+            s.push(s[i - 1] + d);
+        }
+        ReferenceLine { pts, s }
+    }
+
+    /// 某个采样点处的单位切向量（用相邻点差分近似）
+    fn tangent_at(&amp;self, i: usize) -&gt; (f64, f64) {
+        let j = if i + 1 &lt; self.pts.len() { i + 1 } else { i };
+        let k = if i &gt; 0 { i - 1 } else { i };
+        let (dx, dy) = (self.pts[j].0 - self.pts[k].0, self.pts[j].1 - self.pts[k].1);
+        let n = (dx * dx + dy * dy).sqrt().max(1e-9);
+        (dx / n, dy / n)
+    }
+
+    /// Cartesian → Frenet: (x, y) → (s, l)
+    pub fn to_frenet(&amp;self, x: f64, y: f64) -&gt; (f64, f64) {
+        // 1. 找最近采样点
+        let mut best_i = 0;
+        let mut best_d2 = f64::INFINITY;
+        for i in 0..self.pts.len() {
+            let d2 = (self.pts[i].0 - x).powi(2) + (self.pts[i].1 - y).powi(2);
+            if d2 &lt; best_d2 {
+                best_d2 = d2;
+                best_i = i;
+            }
+        }
+        let s = self.s[best_i];
+        // 2. 横向偏移大小与符号
+        let (tx, ty) = self.tangent_at(best_i);
+        let (dx, dy) = (x - self.pts[best_i].0, y - self.pts[best_i].1);
+        // 叉积 tangent × offset 的 z 分量决定左右：正=左侧，负=右侧
+        let cross = tx * dy - ty * dx;
+        let l = best_d2.sqrt() * cross.signum();
+        (s, l)
+    }
+
+    /// Frenet → Cartesian: (s, l) → (x, y)
+    pub fn to_cartesian(&amp;self, s_query: f64, l: f64) -&gt; (f64, f64) {
+        // 找 s_query 落在的区间，插值出参考点与切向
+        let mut i = 0;
+        while i + 1 &lt; self.s.len() &amp;&amp; self.s[i + 1] &lt; s_query {
+            i += 1;
+        }
+        let (tx, ty) = self.tangent_at(i);
+        // 法向量 = 切向逆时针转 90°：(-ty, tx)
+        let (nx, ny) = (-ty, tx);
+        let (bx, by) = self.pts[i]; // 简化：不在区间内再插值
+        (bx + l * nx, by + l * ny)
+    }
+}
+
+fn main() {
+    // 一条向右弯的参考线
+    let refline = ReferenceLine::new(vec![
+        (0.0, 0.0), (10.0, 0.0), (20.0, 2.0), (30.0, 6.0), (40.0, 12.0),
+    ]);
+    // 车在世界坐标 (20, 4)，转到 Frenet
+    let (s, l) = refline.to_frenet(20.0, 4.0);
+    println!("Cartesian (20, 4) -&gt; Frenet (s={:.2}, l={:.2})", s, l);
+    // 再转回去验证闭环
+    let (x, y) = refline.to_cartesian(s, l);
+    println!("Frenet (s={:.2}, l={:.2}) -&gt; Cartesian ({:.2}, {:.2})", s, l, x, y);
+}</code></pre></pre>
+<p><code>to_frenet</code> 告诉你"沿路开了 s 米、偏离中心 l 米"，<code>to_cartesian</code> 把规划在 Frenet 里算好的轨迹转回世界坐标给控制。<strong>一个完整的 Frenet 规划流水线就是</strong>：障碍物和自车转进 Frenet → 纵向（s-t）和横向（l-s 或 l-t）分别规划（用五次/四次多项式或 QP）→ 合成轨迹 → 转回 Cartesian。</p>
+<blockquote>
+<p><strong>真实项目里</strong>：上面的转换为了教学做了简化（最近点用暴力搜、法向用差分）。生产代码要处理一堆恶心的边角：参考线要先<strong>平滑</strong>（原始地图中心线有噪声，直接求切向会抖）、最近点要在<strong>线段上投影</strong>而非只找采样点、弯道曲率大时 Frenet 会<strong>畸变</strong>（曲率半径内侧坐标会挤压甚至自交）。Apollo 的 <code>ReferenceLine</code> 和 <code>FrenetFrame</code> 类为此写了上千行。但<strong>核心思想就是你上面看到的这几十行</strong>——别被工程复杂度吓到，思想是简单的。</p>
+</blockquote>
+<h2 id="工程现实实时性可行性怎么调"><a class="header" href="#工程现实实时性可行性怎么调">工程现实：实时性、可行性、怎么调</a></h2>
+<p>算法讲完，说点让你在项目里不挨骂的实话。</p>
+<p><strong>实时性是铁律。</strong> 规划一般跑 <strong>10~20 Hz</strong>，意味着每一轮必须在 <strong>50~100 ms</strong> 内出解，且要留裕量给通信和控制。这直接淘汰了很多"理论最优但慢"的方法。所以你会看到大量工程妥协：A* 用加权版换速度、优化限制迭代次数、候选轨迹数量卡上限、参考线只取前方一段。<strong>"次优但按时"永远优于"最优但超时"</strong>——超时的规划器等于没有规划器，车会拿着上一帧的旧轨迹裸奔。</p>
+<p><strong>可行性 = 动力学约束。</strong> 规划出的轨迹车必须真能开出来。三条硬线：曲率不能超过最小转弯半径的倒数（方向盘打不了那么急）、横向加速度不能超过轮胎抓地极限（<code>a_lat = v²·κ</code>，速度快时曲率就得小，否则打滑）、加速度和 jerk 要在舒适/物理范围内。一条几何上很美但要求 <code>2g</code> 横向加速度的轨迹，控制根本跟不上，等于废纸。<strong>规划必须自己吃掉动力学约束，不能甩锅给控制。</strong></p>
+<p><strong>兜底与安全。</strong> 和预测一样，规划也要有退路。主规划器无解或超时时，要有一个<strong>保底轨迹</strong>——通常是"沿当前车道舒适减速直至停车"的紧急轨迹。宁可停下，不可失控。</p>
+<p><strong>在 CARLA / 仿真里怎么调（呼应第九部分）。</strong> 规划最难的不是写出来，是<strong>调参</strong>——那一堆代价权重 <code>w_smooth / w_ref / w_safe</code> 之间的平衡，安全权重太大车龟缩不敢动，效率权重太大车贴着障碍飙。工程上的做法是在 <strong>CARLA 等仿真</strong>里搭一批<strong>标准场景</strong>（跟车、超车、行人横穿、路口汇入——正是 1.3 节那个行人场景的加强版），每改一次权重就跑全套场景回归，看有没有"修好一个场景弄坏三个"。人的直觉调不动这么多耦合参数，<strong>场景化的自动回归</strong>才是规划工程师真正的日常。CARLA 提供可复现的场景和真值，让你能量化"这次改动让急刹率降了多少、让通行效率变了多少"——没有仿真闭环，调规划就是盲人摸象。</p>
+<blockquote>
+<p><strong>中高级视角</strong>：面试问"你怎么保证规划的轨迹安全"，初级答"我加了避障代价项"，高级答"我有三层：优化里的软约束（代价）尽量远离障碍、硬约束（碰撞检测）绝不采纳撞的轨迹、以及独立于主规划器的<strong>安全监控层</strong>在最后一道关卡校验并可触发保底减速"。安全从来不靠单点，靠纵深防御——这个思路贯穿整个自动驾驶。</p>
+</blockquote>
+<h2 id="小结"><a class="header" href="#小结">小结</a></h2>
+<ul>
+<li>规划分<strong>三层</strong>：路由（全局图搜索）→ 行为决策（离散，下一章）→ 运动规划（几十毫秒出一条具体轨迹）。</li>
+<li><strong>路径</strong>只有空间、<strong>轨迹</strong>多了时间；控制要的是轨迹。处理二者关系有"路径-速度分解"和"时空联合"两派。</li>
+<li>四大方法家族：<strong>图搜索</strong>（A*/Hybrid A*，给了可运行 A* 和 Hybrid A* 骨架）、<strong>采样</strong>（RRT/RRT*）、<strong>曲线</strong>（五次多项式，给了完整推导与可运行代码）、<strong>优化</strong>（把规划写成带约束的 QP，lattice / EM planner，给了极简 lattice）。</li>
+<li><strong>Frenet（SL）坐标系</strong>是现代规划的地基：沿参考线把弯路"拉直"，纵横解耦，让五次多项式和 QP 都能优雅工作——给了 Cartesian↔Frenet 的可运行转换代码。</li>
+<li>工程铁律：<strong>实时性</strong>（次优但按时 &gt; 最优但超时）、<strong>可行性</strong>（自己吃掉动力学约束）、<strong>兜底</strong>（保底减速轨迹）、<strong>场景化仿真回归</strong>（在 CARLA 里调那堆代价权重）。</li>
+</ul>
+<p>我们已经会算一条轨迹了，但一直回避了上游那个离散的、更像"人在思考"的问题：到底是<strong>跟车还是超车、让行还是通过、变道还是等待</strong>？这些不是解方程能解出来的，是<strong>决策</strong>。下一章我们讲有限状态机、行为树、博弈，并给一个红绿灯 + 行人场景的完整决策实现，把 1.3 节那个悬着的行人彻底了结。</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../part6/prediction.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../part6/decision.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../part6/prediction.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../part6/decision.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

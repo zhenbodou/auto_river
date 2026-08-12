@@ -1,0 +1,493 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN" class="rust" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>2.2 所有权、借用与生命周期 - Rust 智能驾驶开发：从小白到工程师</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="一本面向零基础读者、以 Rust 为主语言、系统讲解自动驾驶软件开发的实战教程。">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+        <!-- MathJax -->
+        <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "rust";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../preface.html">前言：这本书能带你到哪里</a></li><li class="chapter-item expanded affix "><a href="../how-to-use.html">如何使用本书</a></li><li class="chapter-item expanded affix "><li class="part-title">第一部分 · 认识智能驾驶</li><li class="chapter-item expanded "><a href="../part1/levels.html"><strong aria-hidden="true">1.</strong> 1.1 什么是自动驾驶：从 L0 到 L5</a></li><li class="chapter-item expanded "><a href="../part1/architecture.html"><strong aria-hidden="true">2.</strong> 1.2 一辆自动驾驶车的软件全景</a></li><li class="chapter-item expanded "><a href="../part1/pipeline.html"><strong aria-hidden="true">3.</strong> 1.3 感知—定位—预测—规划—控制 五大模块</a></li><li class="chapter-item expanded "><a href="../part1/why-rust.html"><strong aria-hidden="true">4.</strong> 1.4 为什么在智能驾驶里用 Rust</a></li><li class="chapter-item expanded "><a href="../part1/industry.html"><strong aria-hidden="true">5.</strong> 1.5 行业现状、岗位与技术栈地图</a></li><li class="chapter-item expanded affix "><li class="part-title">第二部分 · 面向智驾的 Rust 语言基础</li><li class="chapter-item expanded "><a href="../part2/setup.html"><strong aria-hidden="true">6.</strong> 2.1 搭建 Rust 开发环境</a></li><li class="chapter-item expanded "><a href="../part2/ownership.html" class="active"><strong aria-hidden="true">7.</strong> 2.2 所有权、借用与生命周期</a></li><li class="chapter-item expanded "><a href="../part2/traits.html"><strong aria-hidden="true">8.</strong> 2.3 类型系统、trait 与泛型</a></li><li class="chapter-item expanded "><a href="../part2/errors.html"><strong aria-hidden="true">9.</strong> 2.4 错误处理：Result、Option 与 anyhow</a></li><li class="chapter-item expanded "><a href="../part2/concurrency.html"><strong aria-hidden="true">10.</strong> 2.5 并发与异步：线程、channel、tokio</a></li><li class="chapter-item expanded "><a href="../part2/ecosystem.html"><strong aria-hidden="true">11.</strong> 2.6 智驾常用 crate 生态速览</a></li><li class="chapter-item expanded "><a href="../part2/performance-ffi.html"><strong aria-hidden="true">12.</strong> 2.7 性能工程、unsafe 与 C/C++ FFI</a></li><li class="chapter-item expanded affix "><li class="part-title">第三部分 · 传感器、坐标系与数据</li><li class="chapter-item expanded "><a href="../part3/sensors.html"><strong aria-hidden="true">13.</strong> 3.1 传感器全家福：相机、激光雷达、毫米波、IMU、GNSS</a></li><li class="chapter-item expanded "><a href="../part3/coordinates.html"><strong aria-hidden="true">14.</strong> 3.2 坐标系与刚体变换</a></li><li class="chapter-item expanded "><a href="../part3/time-sync.html"><strong aria-hidden="true">15.</strong> 3.3 时间戳、同步与数据流</a></li><li class="chapter-item expanded "><a href="../part3/data-model.html"><strong aria-hidden="true">16.</strong> 3.4 用 Rust 表达传感器数据</a></li><li class="chapter-item expanded "><a href="../part3/calibration.html"><strong aria-hidden="true">17.</strong> 3.5 传感器标定、运动补偿与在线健康监测</a></li><li class="chapter-item expanded affix "><li class="part-title">第四部分 · 感知</li><li class="chapter-item expanded "><a href="../part4/overview.html"><strong aria-hidden="true">18.</strong> 4.1 感知任务总览</a></li><li class="chapter-item expanded "><a href="../part4/image.html"><strong aria-hidden="true">19.</strong> 4.2 图像处理基础与 Rust 实现</a></li><li class="chapter-item expanded "><a href="../part4/inference.html"><strong aria-hidden="true">20.</strong> 4.3 深度学习推理：onnxruntime / tract / candle</a></li><li class="chapter-item expanded "><a href="../part4/pointcloud.html"><strong aria-hidden="true">21.</strong> 4.4 点云处理与激光雷达感知</a></li><li class="chapter-item expanded "><a href="../part4/tracking-fusion.html"><strong aria-hidden="true">22.</strong> 4.5 多目标跟踪与传感器融合</a></li><li class="chapter-item expanded "><a href="../part4/data-loop.html"><strong aria-hidden="true">23.</strong> 4.6 感知数据闭环与量产评测</a></li><li class="chapter-item expanded affix "><li class="part-title">第五部分 · 定位、建图与状态估计</li><li class="chapter-item expanded "><a href="../part5/kalman.html"><strong aria-hidden="true">24.</strong> 5.1 状态估计与卡尔曼滤波</a></li><li class="chapter-item expanded "><a href="../part5/localization.html"><strong aria-hidden="true">25.</strong> 5.2 定位：GNSS/IMU 组合导航与地图匹配</a></li><li class="chapter-item expanded "><a href="../part5/slam-hdmap.html"><strong aria-hidden="true">26.</strong> 5.3 SLAM 与高精地图概览</a></li><li class="chapter-item expanded affix "><li class="part-title">第六部分 · 预测与规划</li><li class="chapter-item expanded "><a href="../part6/prediction.html"><strong aria-hidden="true">27.</strong> 6.1 行为预测</a></li><li class="chapter-item expanded "><a href="../part6/planning.html"><strong aria-hidden="true">28.</strong> 6.2 路径与轨迹规划</a></li><li class="chapter-item expanded "><a href="../part6/decision.html"><strong aria-hidden="true">29.</strong> 6.3 决策与行为规划</a></li><li class="chapter-item expanded affix "><li class="part-title">第七部分 · 控制</li><li class="chapter-item expanded "><a href="../part7/vehicle-model.html"><strong aria-hidden="true">30.</strong> 7.1 车辆运动学与动力学模型</a></li><li class="chapter-item expanded "><a href="../part7/control.html"><strong aria-hidden="true">31.</strong> 7.2 横向与纵向控制：PID 到 MPC</a></li><li class="chapter-item expanded affix "><li class="part-title">第八部分 · 中间件与系统集成</li><li class="chapter-item expanded "><a href="../part8/middleware.html"><strong aria-hidden="true">32.</strong> 8.1 自动驾驶中间件全景</a></li><li class="chapter-item expanded "><a href="../part8/ros2-rclrs.html"><strong aria-hidden="true">33.</strong> 8.2 ROS 2 与 rclrs：用 Rust 写节点</a></li><li class="chapter-item expanded "><a href="../part8/zenoh-dds.html"><strong aria-hidden="true">34.</strong> 8.3 Zenoh、DDS 与零拷贝通信</a></li><li class="chapter-item expanded "><a href="../part8/messages.html"><strong aria-hidden="true">35.</strong> 8.4 消息定义与序列化</a></li><li class="chapter-item expanded "><a href="../part8/runtime-engineering.html"><strong aria-hidden="true">36.</strong> 8.5 运行时工程：背压、可观测性与资源预算</a></li><li class="chapter-item expanded affix "><li class="part-title">第九部分 · 仿真、测试与安全</li><li class="chapter-item expanded "><a href="../part9/simulation.html"><strong aria-hidden="true">37.</strong> 9.1 仿真：CARLA 与数据回放</a></li><li class="chapter-item expanded "><a href="../part9/testing.html"><strong aria-hidden="true">38.</strong> 9.2 测试策略：单元、集成与录制回放</a></li><li class="chapter-item expanded "><a href="../part9/safety.html"><strong aria-hidden="true">39.</strong> 9.3 功能安全、实时性与部署</a></li><li class="chapter-item expanded "><a href="../part9/cybersecurity.html"><strong aria-hidden="true">40.</strong> 9.4 汽车网络安全、供应链与安全 OTA</a></li><li class="chapter-item expanded "><a href="../part9/safety-case.html"><strong aria-hidden="true">41.</strong> 9.5 系统工程、安全论证与故障注入</a></li><li class="chapter-item expanded affix "><li class="part-title">第十部分 · 实战与职业</li><li class="chapter-item expanded "><a href="../part10/project.html"><strong aria-hidden="true">42.</strong> 10.1 实战项目：搭一个最小自动驾驶栈</a></li><li class="chapter-item expanded "><a href="../part10/career.html"><strong aria-hidden="true">43.</strong> 10.2 学习路线图与求职准备</a></li><li class="chapter-item expanded "><a href="../part10/glossary.html"><strong aria-hidden="true">44.</strong> 10.3 常见术语表</a></li><li class="chapter-item expanded "><a href="../part10/competency.html"><strong aria-hidden="true">45.</strong> 10.4 逐章能力验收与作品集证据</a></li><li class="chapter-item expanded "><a href="../part10/capstone.html"><strong aria-hidden="true">46.</strong> 10.5 中高级毕业项目：从最小栈到可评审系统</a></li><li class="chapter-item expanded affix "><li class="spacer"></li><li class="chapter-item expanded affix "><a href="../afterword.html">后记与延伸资源</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Rust 智能驾驶开发：从小白到工程师</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="22-所有权借用与生命周期"><a class="header" href="#22-所有权借用与生命周期">2.2 所有权、借用与生命周期</a></h1>
+<p>这是本书第一个真正的硬骨头，也是最关键的一章。所有权（ownership）是 Rust 的灵魂——正是它让 Rust 敢承诺"编译期消灭内存错误和数据竞争"。学会它，后面一切都顺；绕过它，你永远在和编译器打游击战。</p>
+<p>我要坦白一件事：<strong>几乎每个 Rust 学习者都会经历一段"和借用检查器搏斗"的痛苦期</strong>。你会写出你觉得天经地义的代码，编译器却红着脸拒绝。这一章我不会假装这个过程不存在——恰恰相反，我会带你<strong>故意写错、看编译器报什么、然后学会怎么改</strong>。因为那些报错信息里藏着 Rust 想教给你的世界观。熬过这一章，借用检查器就从你的敌人变成你的朋友。</p>
+<p>我们全程用一个智驾里再真实不过的东西做例子：<strong>一帧点云（point cloud）和它衍生出的障碍物列表的内存管理</strong>。这比"待办事项 App"贴近你的真实工作一万倍，而且点云够大——十几万个点、几 MB——大到让"要不要拷贝一份"成为一个<strong>性能生死问题</strong>，而不是学院派的细节。</p>
+<h2 id="先问一个-c-老问题这块内存谁负责释放"><a class="header" href="#先问一个-c-老问题这块内存谁负责释放">先问一个 C++ 老问题：这块内存谁负责释放？</a></h2>
+<p>一帧激光雷达点云在内存里长这样：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy)]
+pub struct Point {
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
+    pub intensity: f32,
+}
+
+/// 一帧点云：十几万个点
+pub struct PointCloud {
+    pub timestamp: f64,
+    pub points: Vec&lt;Point&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>一帧 12 万个点，每个点 16 字节，光 <code>points</code> 就是约 2 MB。这块内存从传感器驱动产生，流经预处理、地面分割、聚类、送进感知网络……一路上被无数函数碰到。</p>
+<p>在 C++ 里，一个折磨了工程师几十年的问题是：<strong>这块内存到底谁负责 <code>delete</code>？</strong> 释放早了 → 别人还在用它 → 悬垂指针（use-after-free）。释放晚了或忘了 → 内存泄漏。两个地方都释放 → double free 崩溃。多线程同时读写 → 数据竞争。这些 bug 往往不可复现，在车上偶发，是安全攸关系统的噩梦（第 1.4 节说过）。</p>
+<p>Rust 的答案简单到近乎粗暴：<strong>每块内存，任意时刻，有且仅有一个所有者（owner）。所有者离开作用域，内存自动释放。</strong> 没有 GC，没有手动 free，编译器在编译期就把这套规则钉死。</p>
+<h2 id="所有权三条铁律"><a class="header" href="#所有权三条铁律">所有权三条铁律</a></h2>
+<p>记住这三条，你就掌握了 Rust 的一半：</p>
+<ol>
+<li><strong>每个值有唯一的所有者。</strong></li>
+<li><strong>同一时刻只能有一个所有者</strong>（所有权可以"移动"给别人，但不能同时属于两个人）。</li>
+<li><strong>所有者离开作用域时，值被 drop（析构 + 释放内存）。</strong></li>
+</ol>
+<p>看第三条的实际效果：</p>
+<pre><code class="language-rust ignore">fn process_frame() {
+    let cloud = PointCloud {
+        timestamp: 0.0,
+        points: vec![Point { x: 0.0, y: 0.0, z: 0.0, intensity: 0.0 }; 120_000],
+    };
+    // ... 用 cloud 干活 ...
+} // &lt;- cloud 在这里离开作用域，那 2 MB 内存自动释放，无需你操心</code></pre>
+<p>函数结束，<code>cloud</code> 的作用域到头，编译器<strong>自动</strong>在这里插入释放代码。你不写 free，也不可能忘写。<strong>这就是 RAII（资源获取即初始化）在 Rust 里的默认形态，而且是强制的。</strong></p>
+<h2 id="移动move所有权的转让"><a class="header" href="#移动move所有权的转让">移动（move）：所有权的转让</a></h2>
+<p>现在关键点来了。看这段代码，它会让每个从 C++/Python 来的人愣一下：</p>
+<pre><code class="language-rust ignore">fn main() {
+    let cloud_a = make_cloud();       // cloud_a 拥有这帧点云
+    let cloud_b = cloud_a;            // 所有权“移动”给 cloud_b
+    println!("{}", cloud_a.timestamp); // ❌ 编译错误！
+}</code></pre>
+<p>编译器报错：</p>
+<pre><code class="language-text">error[E0382]: borrow of moved value: `cloud_a`
+ --&gt; src/main.rs:4:20
+  |
+2 |     let cloud_a = make_cloud();
+  |         ------- move occurs because `cloud_a` has type `PointCloud`,
+  |                 which does not implement the `Copy` trait
+3 |     let cloud_b = cloud_a;
+  |                   ------- value moved here
+4 |     println!("{}", cloud_a.timestamp);
+  |                    ^^^^^^^ value borrowed here after move
+</code></pre>
+<p><strong>发生了什么？</strong> <code>let cloud_b = cloud_a;</code> 这行<strong>不是拷贝</strong>，而是把所有权从 <code>cloud_a</code> <strong>移动</strong>到 <code>cloud_b</code>。移动之后，<code>cloud_a</code> 就"作废"了——你不能再用它。为什么这么设计？因为如果允许 <code>cloud_a</code> 和 <code>cloud_b</code> 同时有效，它们就都指向同一块 2 MB 内存，函数结束时两个都想释放它 → double free。Rust 从根上禁止了这种局面。</p>
+<p><strong>这在性能上是巨大的好处</strong>：移动只是把栈上那个"指针 + 长度 + 容量"的胖指针（对 <code>Vec</code> 而言 24 字节）搬过去，<strong>那 2 MB 堆内存原地不动，一个字节都没拷</strong>。C++ 的 <code>std::move</code> 想做同样的事，但它是"约定"，用错了（移动后又用原对象）编译器不拦你；Rust 的移动是编译器强制的，用错直接不给编译。</p>
+<p>要真的复制那 2 MB，你得显式 <code>.clone()</code>：</p>
+<pre><code class="language-rust ignore">let cloud_b = cloud_a.clone(); // 真的拷贝了 2 MB，cloud_a 依然有效</code></pre>
+<p><strong>看到这个 <code>.clone()</code> 就要警觉</strong>：它在复制大内存。这是本章后面"Copy vs Clone 的性能"一节的核心。</p>
+<h3 id="函数调用也会移动"><a class="header" href="#函数调用也会移动">函数调用也会移动</a></h3>
+<p>同样的规则适用于把值传进函数：</p>
+<pre><code class="language-rust ignore">fn consume(cloud: PointCloud) {
+    // cloud 被移动进来，函数结束时它在这里被 drop
+}
+
+fn main() {
+    let cloud = make_cloud();
+    consume(cloud);          // 所有权移动进 consume
+    println!("{:?}", cloud); // ❌ 错误：cloud 已经被移走了
+}</code></pre>
+<p>如果每次调函数都得交出所有权、用完还想用就得 <code>.clone()</code>，那 Rust 就没法用了——你会 clone 到天荒地老。所以 Rust 有了<strong>借用</strong>。</p>
+<h2 id="借用borrow用一下但不夺走所有权"><a class="header" href="#借用borrow用一下但不夺走所有权">借用（borrow）：用一下，但不夺走所有权</a></h2>
+<p><strong>借用</strong>就是"我借你的东西看一眼/改一下，用完还你，所有权始终是你的"。语法是 <code>&amp;</code>：</p>
+<pre><code class="language-rust ignore">/// 只读借用：数一帧点云里有多少个高点（可能是障碍物顶部）
+fn count_high_points(cloud: &amp;PointCloud) -&gt; usize {
+    cloud.points.iter().filter(|p| p.z &gt; 1.0).count()
+}
+
+fn main() {
+    let cloud = make_cloud();
+    let n = count_high_points(&amp;cloud); // 借用给函数，没有移动
+    println!("高点数量: {}", n);
+    println!("这帧时间戳: {}", cloud.timestamp); // ✅ cloud 还是我的，随便用
+}</code></pre>
+<p><code>&amp;cloud</code> 创建一个<strong>不可变引用（immutable reference）</strong>，也叫<strong>共享借用（shared borrow）</strong>。函数拿它读数据，读完引用消失，<code>cloud</code> 毫发无损。<strong>没有拷贝，没有转移所有权</strong>——这才是处理大点云的正确姿势：几乎所有"只读一下"的函数都应该收 <code>&amp;PointCloud</code> 而不是 <code>PointCloud</code>。</p>
+<p>要修改，用<strong>可变借用（mutable reference）</strong> <code>&amp;mut</code>：</p>
+<pre><code class="language-rust ignore">/// 就地把点云平移（比如做坐标系补偿），不产生新的点云
+fn translate(cloud: &amp;mut PointCloud, dx: f32, dy: f32, dz: f32) {
+    for p in cloud.points.iter_mut() {
+        p.x += dx;
+        p.y += dy;
+        p.z += dz;
+    }
+}
+
+fn main() {
+    let mut cloud = make_cloud(); // 注意 mut
+    translate(&amp;mut cloud, 0.0, 0.0, -1.7); // 把点云降到地面坐标系
+    // cloud 被就地修改，没有产生第二份 2 MB
+}</code></pre>
+<h2 id="借用检查器的核心规则数据竞争死于此处"><a class="header" href="#借用检查器的核心规则数据竞争死于此处">借用检查器的核心规则（数据竞争死于此处）</a></h2>
+<p>现在是全章最重要的一条规则，请刻进脑子：</p>
+<blockquote>
+<p><strong>在任意时刻，对同一个数据，你要么可以有任意多个不可变借用（<code>&amp;T</code>），要么只能有恰好一个可变借用（<code>&amp;mut T</code>）。二者不可兼得。</strong></p>
+</blockquote>
+<p>换句话说：<strong>读可以共享，写必须独占。</strong> 这条规则叫"共享 XOR 可变"（shared xor mutable）。</p>
+<p>为什么这条规则能<strong>从根上消灭数据竞争</strong>？想想数据竞争的定义：两个线程同时访问同一内存，至少一个在写，且没有同步。Rust 说：你想写（<code>&amp;mut</code>），就必须独占，别人连读都不行——那自然没有"同时访问、一个在写"的局面。<strong>数据竞争在编译期就被这条规则拒绝了，而且不只是多线程，单线程的别名 bug（aliasing bug）也一并消灭。</strong> 第 1.4 节那个 C++ vector 扩容导致悬垂引用的例子，根源正是"有人持有引用时，又有人改动了容器"——在 Rust 里这就是"共享借用还活着时试图可变借用"，编译器直接拒绝。</p>
+<h2 id="和编译器搏斗一迭代时修改"><a class="header" href="#和编译器搏斗一迭代时修改">和编译器搏斗（一）：迭代时修改</a></h2>
+<p>来个真实会踩的坑。你想遍历障碍物列表，遇到置信度太低的就删掉：</p>
+<pre><code class="language-rust ignore">fn filter_low_confidence(obstacles: &amp;mut Vec&lt;Obstacle&gt;) {
+    for (i, obs) in obstacles.iter().enumerate() { // 不可变借用 obstacles
+        if obs.confidence &lt; 0.5 {
+            obstacles.remove(i);                    // ❌ 想可变借用 obstacles
+        }
+    }
+}</code></pre>
+<p>编译器报错：</p>
+<pre><code class="language-text">error[E0502]: cannot borrow `*obstacles` as mutable because it is also
+              borrowed as immutable
+  |
+2 |     for (i, obs) in obstacles.iter().enumerate() {
+  |                     ---------------------------
+  |                     |
+  |                     immutable borrow occurs here
+  |                     immutable borrow later used here
+3 |         if obs.confidence &lt; 0.5 {
+4 |             obstacles.remove(i);
+  |             ^^^^^^^^^^^^^^^^^^^ mutable borrow occurs here
+</code></pre>
+<p><code>iter()</code> 借用了 <code>obstacles</code>（不可变），循环还没结束这个借用就活着；而 <code>remove</code> 需要可变借用。"共享 XOR 可变"被违反。<strong>这不是 Rust 找茬——这个模式在 C++ 里就是经典 bug</strong>：<code>remove</code> 可能导致 vector 内存重排，正在遍历的迭代器瞬间失效（iterator invalidation），后续访问就是未定义行为。Rust 只是在编译期把这个古老陷阱挡下了。</p>
+<p><strong>怎么改？</strong> 地道的 Rust 用 <code>retain</code>——一行搞定，还更快：</p>
+<pre><code class="language-rust ignore">fn filter_low_confidence(obstacles: &amp;mut Vec&lt;Obstacle&gt;) {
+    obstacles.retain(|obs| obs.confidence &gt;= 0.5);
+}</code></pre>
+<p><code>retain</code> 保留满足条件的元素、原地删掉其余，内部用一次遍历完成，没有反复的元素搬移。<strong>编译器逼你写出了更好的代码。</strong> 这是你会反复体会到的：借用检查器拒绝的往往真的是坏代码，改对之后常常更优雅、更快。</p>
+<h2 id="和编译器搏斗二悬垂引用"><a class="header" href="#和编译器搏斗二悬垂引用">和编译器搏斗（二）：悬垂引用</a></h2>
+<p>你想写个函数，从点云里找到最近的点，返回它的引用：</p>
+<pre><code class="language-rust ignore">fn nearest_point(cloud: PointCloud) -&gt; &amp;Point { // ❌
+    cloud.points.iter()
+        .min_by(|a, b| dist(a).partial_cmp(&amp;dist(b)).unwrap())
+        .unwrap()
+}</code></pre>
+<p>编译器报错（简化）：</p>
+<pre><code class="language-text">error[E0106]: missing lifetime specifier
+  |
+1 | fn nearest_point(cloud: PointCloud) -&gt; &amp;Point {
+  |                                        ^ expected named lifetime parameter
+</code></pre>
+<p>更深的问题是：<code>cloud</code> 是<strong>按值传入</strong>的，函数结束时它被 drop，那 2 MB 内存释放了。你却想返回一个指向它内部某个点的引用——这个引用会指向已释放的内存，<strong>经典悬垂引用</strong>。C++ 里这段能编过，运行时随机翻车。Rust 直接不让你编。</p>
+<p>改法一：既然要返回内部引用，就得<strong>借用</strong>输入而不是拿走它：</p>
+<pre><code class="language-rust ignore">fn nearest_point(cloud: &amp;PointCloud) -&gt; &amp;Point {
+    cloud.points.iter()
+        .min_by(|a, b| dist(a).partial_cmp(&amp;dist(b)).unwrap())
+        .unwrap()
+}</code></pre>
+<p>现在能编过了。这里编译器悄悄帮你做了件事——它推断出"返回的 <code>&amp;Point</code> 活得和输入的 <code>&amp;PointCloud</code> 一样久"。这个"活多久"，就是<strong>生命周期（lifetime）</strong>。</p>
+<h2 id="生命周期标注给引用贴上能活多久的标签"><a class="header" href="#生命周期标注给引用贴上能活多久的标签">生命周期标注：给引用贴上"能活多久"的标签</a></h2>
+<p>生命周期是 Rust 里最吓人的语法，但概念其实朴素：<strong>它不改变任何东西的实际存活时间，只是让你把"这个引用不能比它指向的数据活得更久"这件事写出来给编译器核对。</strong></p>
+<p>大多数时候编译器能自己推断（这叫生命周期省略，lifetime elision），你根本不用写。只有当它推不出来、有歧义时，才要你手动标注。经典场景：函数返回的引用，可能来自两个输入之一，编译器不知道该绑给谁。</p>
+<pre><code class="language-rust ignore">/// 从两帧点云里返回点数更多的那一帧的引用
+fn denser&lt;'a&gt;(a: &amp;'a PointCloud, b: &amp;'a PointCloud) -&gt; &amp;'a PointCloud {
+    if a.points.len() &gt;= b.points.len() { a } else { b }
+}</code></pre>
+<p><code>'a</code>（读作 "tick a"）是一个<strong>生命周期参数</strong>。这个签名在说："输入 <code>a</code>、<code>b</code> 和返回值共享同一个生命周期 <code>'a</code>；返回的引用最多活到 <code>a</code> 和 <code>b</code> 里先失效的那一个为止。" 这样调用方就知道：只要它还想用返回值，就得保证 <code>a</code> 和 <code>b</code> 两帧点云都还活着。编译器用这个契约在调用点做检查，杜绝悬垂。</p>
+<p>看它怎么拦住错误：</p>
+<pre><code class="language-rust ignore">fn main() {
+    let frame1 = make_cloud();
+    let result;
+    {
+        let frame2 = make_cloud();
+        result = denser(&amp;frame1, &amp;frame2); // result 借了 frame2
+    } // ❌ frame2 在这里被 drop
+    println!("{}", result.timestamp);      // 但 result 想活到这里
+}</code></pre>
+<p>编译器会说 <code>frame2</code> 活得不够久（"borrowed value does not live long enough"）。<strong>没有生命周期标注，编译器就没法证明 <code>result</code> 不会悬垂；有了它，编译器把这个偶发的、致命的 bug 变成一个明确的编译错误。</strong> 这就是那句老话的含义：<em>Rust 把运行时的偶发崩溃，变成编译时的确定报错。</em></p>
+<blockquote>
+<p><strong>中高级视角</strong>：生命周期标注不产生任何运行时代码——它是纯粹的编译期契约，零成本。很多人怕它，其实 90% 的日常代码靠省略规则根本不用写生命周期。你真正需要手写它的地方，通常是在设计<strong>持有引用的结构体</strong>时。比如一个"点云的只读视图"：</p>
+<pre><code class="language-rust ignore">/// 一段点云的切片视图，不拥有数据，只借用
+struct CloudView&lt;'a&gt; {
+    timestamp: f64,
+    points: &amp;'a [Point], // 借用别人的点，自己不持有那 2 MB
+}</code></pre>
+<p><code>CloudView&lt;'a&gt;</code> 在说"我这个结构体不能比我借的那段 <code>points</code> 活得更久"。这种"零拷贝视图"在高性能感知里非常常见——你想把一大帧点云按区域切成好几块分给不同线程处理，又不想复制数据，<code>&amp;[Point]</code> 切片视图正是答案。</p>
+</blockquote>
+<h2 id="copy-vs-clone大点云不能随便-clone"><a class="header" href="#copy-vs-clone大点云不能随便-clone">Copy vs Clone：大点云不能随便 clone</a></h2>
+<p>现在回到那个贯穿全章的性能主题。你可能已经注意到：<code>Point</code> 派生了 <code>Copy</code>，而 <code>PointCloud</code> 只派生了 <code>Clone</code>。这个区别是有意的，背后是一条重要的性能纪律。</p>
+<p><strong><code>Copy</code></strong>：一个类型如果是 <code>Copy</code> 的，赋值和传参时会<strong>按位复制</strong>，而且原值<strong>依然有效</strong>（不发生移动）。只有"小、且完全在栈上、没有堆资源"的类型才配当 <code>Copy</code>——比如 <code>i32</code>、<code>f64</code>、<code>bool</code>，以及我们的 <code>Point</code>（就 16 字节，纯栈数据）。</p>
+<pre><code class="language-rust ignore">let p1 = Point { x: 1.0, y: 2.0, z: 3.0, intensity: 0.5 };
+let p2 = p1;           // Copy：拷贝 16 字节
+println!("{}", p1.x);  // ✅ p1 依然有效，因为它是 Copy</code></pre>
+<p><strong><code>Clone</code></strong>：显式的、可能昂贵的复制。任何类型都能实现 <code>Clone</code>，包括那些持有堆内存的（<code>Vec</code>、<code>String</code>、<code>PointCloud</code>）。它<strong>不会</strong>在赋值时自动发生——你必须亲手写 <code>.clone()</code>。这个"必须显式"的设计是刻意的：<strong>Rust 想让每一次昂贵的深拷贝都在代码里显眼地暴露出来</strong>，而不是像 C++ 拷贝构造函数那样悄无声息地发生。</p>
+<p>对比 C++：一个 <code>std::vector&lt;Point&gt; a = b;</code> 就默默拷了整个 vector，你一眼看代码根本发现不了这里有 2 MB 的拷贝。Rust 里同样的操作要么是移动（不拷），要么你得写出 <code>b.clone()</code>（拷，但你看得见）。<strong>代码审查时，<code>.clone()</code> 就是性能审查的抓手。</strong></p>
+<p>看一个真实的性能陷阱：</p>
+<pre><code class="language-rust ignore">// ❌ 反模式：每一帧都克隆整份点云，2 MB × 帧率 的无谓拷贝
+fn process_bad(cloud: PointCloud) -&gt; Vec&lt;Obstacle&gt; {
+    let filtered = cloud.clone();       // 白拷 2 MB！
+    let ground_removed = filtered.clone(); // 又白拷 2 MB！
+    detect(&amp;ground_removed)
+}
+
+// ✅ 正确：全程借用，零拷贝
+fn process_good(cloud: &amp;PointCloud) -&gt; Vec&lt;Obstacle&gt; {
+    detect(cloud) // 需要修改时才 &amp;mut，需要新数据时才构造新的，绝不无脑 clone
+}</code></pre>
+<p>在 10 Hz 的激光雷达上，<code>process_bad</code> 每秒白白拷贝 40 MB，吃掉内存带宽、增加延迟抖动。在讲究实时性和资源受限的车载环境里，这种"随手 clone"是初级工程师最常见、也最容易被 code review 揪出的性能问题。</p>
+<blockquote>
+<p><strong>面试题</strong>：什么样的类型应该派生 <code>Copy</code>？为什么 <code>Vec&lt;T&gt;</code> 不能是 <code>Copy</code>？
+<strong>答</strong>：只有语义上"廉价按位复制、且没有需要特殊清理的资源"的小类型才该是 <code>Copy</code>，比如坐标、标志位。<code>Vec&lt;T&gt;</code> 持有堆内存，若它是 <code>Copy</code>，<code>let b = a;</code> 就会按位复制那个胖指针，让 <code>a</code> 和 <code>b</code> 指向<strong>同一块</strong>堆内存，两者析构时 double free——所以 Rust 从类型层面禁止 <code>Vec</code> 成为 <code>Copy</code>。这也正是"移动"存在的理由。</p>
+</blockquote>
+<blockquote>
+<p><strong>真实项目里</strong>：处理点云的性能纪律可以总结成几条：① 默认传 <code>&amp;PointCloud</code>；② 要改就传 <code>&amp;mut PointCloud</code> 就地改；③ 真需要并行处理不同区域，用 <code>&amp;[Point]</code> 切片视图分发，而不是切成多个 <code>Vec</code> 拷贝；④ 只有当你确实要产出一份"新的、独立的、要跨越原数据生命周期存活"的数据时，才 clone。你手边的 <code>inf/</code> 推理 SDK 把 Python 流水线移植成 Rust，能拿到性能收益，很大一部分正来自这种"数据只在管线里流动、靠移动和借用而非拷贝传递"的所有权设计——Python 里那些隐式的对象引用和拷贝，在 Rust 里变成了显式、可控、零拷贝的数据流。</p>
+</blockquote>
+<h2 id="一个综合例子一帧点云的完整流转"><a class="header" href="#一个综合例子一帧点云的完整流转">一个综合例子：一帧点云的完整流转</a></h2>
+<p>把这一章的东西串起来，看一帧点云从进来到产出障碍物的所有权流转：</p>
+<pre><code class="language-rust ignore">fn perception_pipeline(mut cloud: PointCloud) -&gt; Vec&lt;Obstacle&gt; {
+    // 1. cloud 的所有权移动进来。我们要就地改它，所以用 mut。
+
+    // 2. 去地面：就地修改，可变借用，零拷贝
+    remove_ground(&amp;mut cloud);
+
+    // 3. 统计信息：只读，不可变借用
+    let n = count_high_points(&amp;cloud);
+    log::debug!("去地面后剩 {} 个高点", n);
+
+    // 4. 聚类 + 检测：只读借用点云，产出全新的障碍物列表
+    let obstacles = detect(&amp;cloud);
+
+    // 5. 函数结束，cloud 离开作用域，那 2 MB 在此自动释放
+    obstacles
+    // 障碍物列表的所有权移动给调用方
+}</code></pre>
+<p>数一数：整个流水线里，那 2 MB 点云<strong>只存在一份</strong>，从头到尾没有被拷贝过。它被就地修改、被只读借用、最后自动释放。障碍物列表是新产出的，所有权干净地交还给调用方。<strong>没有 GC，没有手动 free，没有一次多余的深拷贝，也不可能有悬垂或竞争</strong>——这就是所有权系统给你的东西。</p>
+<h2 id="小结"><a class="header" href="#小结">小结</a></h2>
+<ul>
+<li>所有权三铁律：<strong>唯一所有者、所有权可移动不可共享、所有者离开作用域自动释放</strong>。这是"没有 GC 也没有手动 free"的根基。</li>
+<li><strong>移动（move）</strong> 只搬栈上的胖指针、不碰堆数据，是零成本的；<strong>克隆（clone）</strong> 才真拷贝堆内存，且必须显式写出来——这让每次昂贵拷贝在代码里都显眼可查。</li>
+<li><strong>借用</strong>让你"用一下不夺走"：<code>&amp;T</code> 共享只读、<code>&amp;mut T</code> 独占可写。核心规则"<strong>共享 XOR 可变</strong>"从根上消灭数据竞争和迭代器失效这类别名 bug。</li>
+<li><strong>生命周期</strong> 是零成本的编译期契约，把"引用不能比数据活得久"写给编译器核对，把运行时的偶发悬垂变成编译时的确定报错；日常大多靠省略规则不用手写，设计"持有引用的结构体/视图"时才需要。</li>
+<li><strong>性能纪律</strong>：大点云默认传 <code>&amp;</code>、要改传 <code>&amp;mut</code>、并行用切片视图，<strong>绝不无脑 clone</strong>——<code>.clone()</code> 是 code review 里的性能抓手。</li>
+<li>借用检查器拒绝的往往真是坏代码，改对之后通常更优雅更快。和它搏斗是暂时的，之后它是你的朋友。</li>
+</ul>
+<p>下一章我们上 Rust 的类型系统——用 <code>enum</code> 优雅地建模传感器消息和障碍物类别，用 <code>trait</code> 定义"传感器""检测器"这样的抽象接口，并搞清一个中高级必考点：<strong>动态分发（dyn）和泛型该怎么选</strong>。</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../part2/setup.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../part2/traits.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../part2/setup.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../part2/traits.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

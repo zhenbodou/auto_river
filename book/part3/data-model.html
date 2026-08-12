@@ -1,0 +1,544 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN" class="rust" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>3.4 用 Rust 表达传感器数据 - Rust 智能驾驶开发：从小白到工程师</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="一本面向零基础读者、以 Rust 为主语言、系统讲解自动驾驶软件开发的实战教程。">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+        <!-- MathJax -->
+        <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "rust";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../preface.html">前言：这本书能带你到哪里</a></li><li class="chapter-item expanded affix "><a href="../how-to-use.html">如何使用本书</a></li><li class="chapter-item expanded affix "><li class="part-title">第一部分 · 认识智能驾驶</li><li class="chapter-item expanded "><a href="../part1/levels.html"><strong aria-hidden="true">1.</strong> 1.1 什么是自动驾驶：从 L0 到 L5</a></li><li class="chapter-item expanded "><a href="../part1/architecture.html"><strong aria-hidden="true">2.</strong> 1.2 一辆自动驾驶车的软件全景</a></li><li class="chapter-item expanded "><a href="../part1/pipeline.html"><strong aria-hidden="true">3.</strong> 1.3 感知—定位—预测—规划—控制 五大模块</a></li><li class="chapter-item expanded "><a href="../part1/why-rust.html"><strong aria-hidden="true">4.</strong> 1.4 为什么在智能驾驶里用 Rust</a></li><li class="chapter-item expanded "><a href="../part1/industry.html"><strong aria-hidden="true">5.</strong> 1.5 行业现状、岗位与技术栈地图</a></li><li class="chapter-item expanded affix "><li class="part-title">第二部分 · 面向智驾的 Rust 语言基础</li><li class="chapter-item expanded "><a href="../part2/setup.html"><strong aria-hidden="true">6.</strong> 2.1 搭建 Rust 开发环境</a></li><li class="chapter-item expanded "><a href="../part2/ownership.html"><strong aria-hidden="true">7.</strong> 2.2 所有权、借用与生命周期</a></li><li class="chapter-item expanded "><a href="../part2/traits.html"><strong aria-hidden="true">8.</strong> 2.3 类型系统、trait 与泛型</a></li><li class="chapter-item expanded "><a href="../part2/errors.html"><strong aria-hidden="true">9.</strong> 2.4 错误处理：Result、Option 与 anyhow</a></li><li class="chapter-item expanded "><a href="../part2/concurrency.html"><strong aria-hidden="true">10.</strong> 2.5 并发与异步：线程、channel、tokio</a></li><li class="chapter-item expanded "><a href="../part2/ecosystem.html"><strong aria-hidden="true">11.</strong> 2.6 智驾常用 crate 生态速览</a></li><li class="chapter-item expanded "><a href="../part2/performance-ffi.html"><strong aria-hidden="true">12.</strong> 2.7 性能工程、unsafe 与 C/C++ FFI</a></li><li class="chapter-item expanded affix "><li class="part-title">第三部分 · 传感器、坐标系与数据</li><li class="chapter-item expanded "><a href="../part3/sensors.html"><strong aria-hidden="true">13.</strong> 3.1 传感器全家福：相机、激光雷达、毫米波、IMU、GNSS</a></li><li class="chapter-item expanded "><a href="../part3/coordinates.html"><strong aria-hidden="true">14.</strong> 3.2 坐标系与刚体变换</a></li><li class="chapter-item expanded "><a href="../part3/time-sync.html"><strong aria-hidden="true">15.</strong> 3.3 时间戳、同步与数据流</a></li><li class="chapter-item expanded "><a href="../part3/data-model.html" class="active"><strong aria-hidden="true">16.</strong> 3.4 用 Rust 表达传感器数据</a></li><li class="chapter-item expanded "><a href="../part3/calibration.html"><strong aria-hidden="true">17.</strong> 3.5 传感器标定、运动补偿与在线健康监测</a></li><li class="chapter-item expanded affix "><li class="part-title">第四部分 · 感知</li><li class="chapter-item expanded "><a href="../part4/overview.html"><strong aria-hidden="true">18.</strong> 4.1 感知任务总览</a></li><li class="chapter-item expanded "><a href="../part4/image.html"><strong aria-hidden="true">19.</strong> 4.2 图像处理基础与 Rust 实现</a></li><li class="chapter-item expanded "><a href="../part4/inference.html"><strong aria-hidden="true">20.</strong> 4.3 深度学习推理：onnxruntime / tract / candle</a></li><li class="chapter-item expanded "><a href="../part4/pointcloud.html"><strong aria-hidden="true">21.</strong> 4.4 点云处理与激光雷达感知</a></li><li class="chapter-item expanded "><a href="../part4/tracking-fusion.html"><strong aria-hidden="true">22.</strong> 4.5 多目标跟踪与传感器融合</a></li><li class="chapter-item expanded "><a href="../part4/data-loop.html"><strong aria-hidden="true">23.</strong> 4.6 感知数据闭环与量产评测</a></li><li class="chapter-item expanded affix "><li class="part-title">第五部分 · 定位、建图与状态估计</li><li class="chapter-item expanded "><a href="../part5/kalman.html"><strong aria-hidden="true">24.</strong> 5.1 状态估计与卡尔曼滤波</a></li><li class="chapter-item expanded "><a href="../part5/localization.html"><strong aria-hidden="true">25.</strong> 5.2 定位：GNSS/IMU 组合导航与地图匹配</a></li><li class="chapter-item expanded "><a href="../part5/slam-hdmap.html"><strong aria-hidden="true">26.</strong> 5.3 SLAM 与高精地图概览</a></li><li class="chapter-item expanded affix "><li class="part-title">第六部分 · 预测与规划</li><li class="chapter-item expanded "><a href="../part6/prediction.html"><strong aria-hidden="true">27.</strong> 6.1 行为预测</a></li><li class="chapter-item expanded "><a href="../part6/planning.html"><strong aria-hidden="true">28.</strong> 6.2 路径与轨迹规划</a></li><li class="chapter-item expanded "><a href="../part6/decision.html"><strong aria-hidden="true">29.</strong> 6.3 决策与行为规划</a></li><li class="chapter-item expanded affix "><li class="part-title">第七部分 · 控制</li><li class="chapter-item expanded "><a href="../part7/vehicle-model.html"><strong aria-hidden="true">30.</strong> 7.1 车辆运动学与动力学模型</a></li><li class="chapter-item expanded "><a href="../part7/control.html"><strong aria-hidden="true">31.</strong> 7.2 横向与纵向控制：PID 到 MPC</a></li><li class="chapter-item expanded affix "><li class="part-title">第八部分 · 中间件与系统集成</li><li class="chapter-item expanded "><a href="../part8/middleware.html"><strong aria-hidden="true">32.</strong> 8.1 自动驾驶中间件全景</a></li><li class="chapter-item expanded "><a href="../part8/ros2-rclrs.html"><strong aria-hidden="true">33.</strong> 8.2 ROS 2 与 rclrs：用 Rust 写节点</a></li><li class="chapter-item expanded "><a href="../part8/zenoh-dds.html"><strong aria-hidden="true">34.</strong> 8.3 Zenoh、DDS 与零拷贝通信</a></li><li class="chapter-item expanded "><a href="../part8/messages.html"><strong aria-hidden="true">35.</strong> 8.4 消息定义与序列化</a></li><li class="chapter-item expanded "><a href="../part8/runtime-engineering.html"><strong aria-hidden="true">36.</strong> 8.5 运行时工程：背压、可观测性与资源预算</a></li><li class="chapter-item expanded affix "><li class="part-title">第九部分 · 仿真、测试与安全</li><li class="chapter-item expanded "><a href="../part9/simulation.html"><strong aria-hidden="true">37.</strong> 9.1 仿真：CARLA 与数据回放</a></li><li class="chapter-item expanded "><a href="../part9/testing.html"><strong aria-hidden="true">38.</strong> 9.2 测试策略：单元、集成与录制回放</a></li><li class="chapter-item expanded "><a href="../part9/safety.html"><strong aria-hidden="true">39.</strong> 9.3 功能安全、实时性与部署</a></li><li class="chapter-item expanded "><a href="../part9/cybersecurity.html"><strong aria-hidden="true">40.</strong> 9.4 汽车网络安全、供应链与安全 OTA</a></li><li class="chapter-item expanded "><a href="../part9/safety-case.html"><strong aria-hidden="true">41.</strong> 9.5 系统工程、安全论证与故障注入</a></li><li class="chapter-item expanded affix "><li class="part-title">第十部分 · 实战与职业</li><li class="chapter-item expanded "><a href="../part10/project.html"><strong aria-hidden="true">42.</strong> 10.1 实战项目：搭一个最小自动驾驶栈</a></li><li class="chapter-item expanded "><a href="../part10/career.html"><strong aria-hidden="true">43.</strong> 10.2 学习路线图与求职准备</a></li><li class="chapter-item expanded "><a href="../part10/glossary.html"><strong aria-hidden="true">44.</strong> 10.3 常见术语表</a></li><li class="chapter-item expanded "><a href="../part10/competency.html"><strong aria-hidden="true">45.</strong> 10.4 逐章能力验收与作品集证据</a></li><li class="chapter-item expanded "><a href="../part10/capstone.html"><strong aria-hidden="true">46.</strong> 10.5 中高级毕业项目：从最小栈到可评审系统</a></li><li class="chapter-item expanded affix "><li class="spacer"></li><li class="chapter-item expanded affix "><a href="../afterword.html">后记与延伸资源</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Rust 智能驾驶开发：从小白到工程师</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="34-用-rust-表达传感器数据"><a class="header" href="#34-用-rust-表达传感器数据">3.4 用 Rust 表达传感器数据</a></h1>
+<p>前三章我们认识了传感器、学会了坐标变换、搞定了时间同步。这一章是第三部分的收官，也是承前启后的一环：<strong>把所有这些概念，落成一套干净、高效、可复用的 Rust 数据结构</strong>。</p>
+<p>这正是 Rust 最能发光的地方。C++ 里传感器数据结构常常是一堆裸指针、手动管理的 buffer 和"谁负责释放"的口头约定；Python 里则是一堆 numpy 数组配着松散的字典。Rust 让我们既能表达出<strong>清晰的所有权</strong>（这块点云归谁、谁能改它），又能榨出<strong>接近 C 的性能</strong>（零拷贝、控制内存布局），还能靠类型系统在编译期挡掉一整类 bug。</p>
+<p>这章解决：<strong>如何设计点云/图像/IMU/GNSS 的数据结构、如何用统一的消息头包装它们、如何在多个模块间零拷贝地共享大数据、以及 SoA 与 AoS 的内存布局为什么能让点云处理快好几倍</strong>。最后讲序列化——录制和回放，数据闭环的地基。全部配可运行代码。</p>
+<h2 id="第一块砖统一的消息头"><a class="header" href="#第一块砖统一的消息头">第一块砖：统一的消息头</a></h2>
+<p>回想 3.3 的 <code>Stamped&lt;T&gt;</code>，它只有时间戳。但实际工程中，一条消息还必须知道自己<strong>在哪个坐标系里</strong>——不然 3.2 的坐标变换就无从谈起。ROS 的 <code>std_msgs/Header</code> 就是干这个的，我们照着做一个：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// 消息头：每条传感器消息都该带的元信息。
+/// 对标 ROS 的 std_msgs/Header。
+#[derive(Debug, Clone)]
+pub struct Header {
+    /// 采集时刻的时间戳，单调时钟纳秒（见 3.3：用于排序/对齐）。
+    pub stamp_ns: u64,
+    /// 数据所在的坐标系名，如 "lidar_top" / "camera_front" / "ego"。
+    /// 坐标变换（3.2）靠它来查"该用哪个变换"。
+    pub frame_id: FrameId,
+    /// 序列号，用于检测丢帧。
+    pub seq: u32,
+}
+
+/// 用枚举而非裸字符串表示坐标系，编译期防拼写错误。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum FrameId {
+    LidarTop,
+    CameraFront,
+    RadarFront,
+    Imu,
+    Ego,
+    Map,
+}
+
+/// 泛型消息：头 + 负载。这是 3.3 里 Stamped&lt;T&gt; 的完整版。
+#[derive(Debug, Clone)]
+pub struct Message&lt;T&gt; {
+    pub header: Header,
+    pub data: T,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>两个设计选择值得说：</p>
+<ol>
+<li><strong><code>frame_id</code> 用枚举而非 <code>String</code></strong>。ROS 里 <code>frame_id</code> 是字符串，灵活但一个拼写错误（<code>"lidar_top"</code> vs <code>"lidar-top"</code>）就让坐标变换默默失败。我们用枚举，让编译器替你挡住这类错误。代价是新增坐标系要改枚举——对一辆车固定的传感器配置，这个代价可以接受。（真要动态配置，再退回字符串 + 校验。）</li>
+<li><strong><code>Message&lt;T&gt;</code> 泛型化</strong>。头是通用的，负载各不相同。这样 <code>Message&lt;PointCloud&gt;</code>、<code>Message&lt;ImageFrame&gt;</code>、<code>Message&lt;ImuSample&gt;</code> 共享同一套头逻辑，DRY。</li>
+</ol>
+<h2 id="imu-与-gnss小而规整的数据"><a class="header" href="#imu-与-gnss小而规整的数据">IMU 与 GNSS：小而规整的数据</a></h2>
+<p>从简单的开始。IMU 和 GNSS 每条消息就是几个标量，直接用定长数组或 <code>nalgebra</code> 向量，<code>Copy</code> 得起：</p>
+<pre><code class="language-rust ignore">use nalgebra::Vector3;
+
+/// 一条 IMU 采样。数据小，直接 Copy。
+#[derive(Debug, Clone, Copy)]
+pub struct ImuSample {
+    pub angular_velocity: Vector3&lt;f64&gt;,     // 陀螺仪 rad/s
+    pub linear_acceleration: Vector3&lt;f64&gt;,  // 加速度计 m/s^2（含重力）
+    /// 可选：厂商已解算好的姿态（单位四元数）。没有就 None。
+    pub orientation: Option&lt;nalgebra::UnitQuaternion&lt;f64&gt;&gt;,
+}
+
+/// GNSS 定位。注意 fix_type——3.1 强调过必须检查它。
+#[derive(Debug, Clone, Copy)]
+pub struct GnssFix {
+    pub latitude: f64,
+    pub longitude: f64,
+    pub altitude: f64,
+    pub fix_type: FixType,
+    pub hdop: f32,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FixType {
+    NoFix,
+    Single,    // 米级
+    Dgps,
+    RtkFloat,  // 分米级，未收敛
+    RtkFixed,  // 厘米级，可信
+}
+
+impl GnssFix {
+    /// 只有 RTK 固定解才配用于厘米级定位。类型系统 + 显式检查双保险。
+    pub fn is_precise(&amp;self) -&gt; bool {
+        self.fix_type == FixType::RtkFixed
+    }
+}</code></pre>
+<p><code>ImuSample</code> 是 <code>Copy</code> 的，因为它小（几十字节），复制比借用还省心。这跟接下来的点云形成鲜明对比——<strong>数据大小决定所有权策略</strong>，这是 Rust 建模的核心直觉。</p>
+<h2 id="图像大-buffer-与像素格式"><a class="header" href="#图像大-buffer-与像素格式">图像：大 buffer 与像素格式</a></h2>
+<p>图像是第一个"大家伙"，一帧几 MB。它不能 <code>Copy</code>（复制几 MB 太贵），像素数据放在堆上的 <code>Vec&lt;u8&gt;</code>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PixelFormat {
+    Rgb8,   // 每像素 3 字节
+    Bgr8,
+    Gray8,  // 每像素 1 字节
+    Yuyv,   // 每 2 像素 4 字节
+}
+
+impl PixelFormat {
+    /// 每像素字节数（YUYV 用平均值表达，实际按 2 像素一组）。
+    pub fn bytes_per_pixel(&amp;self) -&gt; usize {
+        match self {
+            PixelFormat::Rgb8 | PixelFormat::Bgr8 =&gt; 3,
+            PixelFormat::Gray8 =&gt; 1,
+            PixelFormat::Yuyv =&gt; 2,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct ImageFrame {
+    pub width: u32,
+    pub height: u32,
+    pub format: PixelFormat,
+    /// 行优先像素缓冲。行与行之间可能有对齐填充，故显式存 step。
+    pub data: Vec&lt;u8&gt;,
+    pub step: usize, // 每行字节数（&gt;= width * bytes_per_pixel）
+}
+
+impl ImageFrame {
+    /// 借用某一行的像素，零拷贝。返回切片，不复制数据。
+    pub fn row(&amp;self, y: u32) -&gt; &amp;[u8] {
+        let start = y as usize * self.step;
+        let len = self.width as usize * self.format.bytes_per_pixel();
+        &amp;self.data[start..start + len]
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>那个 <code>step</code>（也叫 stride/pitch）是实战细节：很多相机驱动和 GPU 要求每行按 4/16/64 字节对齐，于是行尾有填充，<code>step &gt; width * bpp</code>。硬编码 <code>width * bpp</code> 去索引，遇到带填充的图像就会错位——一个经典的"图像斜了"bug。存显式 <code>step</code> 是专业做法。</p>
+<h2 id="点云这一章的性能主角"><a class="header" href="#点云这一章的性能主角">点云：这一章的性能主角</a></h2>
+<p>点云是数据量和性能压力最大的传感器数据，也是 Rust 内存布局知识最能发挥的地方。我们先给最直观的表示，再讲为什么它在高性能场景下不够用。</p>
+<h3 id="aos直觉的表示"><a class="header" href="#aos直觉的表示">AoS：直觉的表示</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy)]
+pub struct PointXYZI {
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
+    pub intensity: f32,
+}
+
+/// 数组的结构体... 不，是"结构体的数组"（Array of Structs）。
+pub struct PointCloudAoS {
+    pub points: Vec&lt;PointXYZI&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>这叫 <strong>AoS（Array of Structs，结构体数组）</strong>：内存里是 <code>x0 y0 z0 i0 | x1 y1 z1 i1 | ...</code>，一个点的四个字段紧挨着。直觉、好写、访问单个点的所有字段很自然。绝大多数教程到这就停了。但性能工程师会追问一句……</p>
+<h3 id="soa为性能而生的布局"><a class="header" href="#soa为性能而生的布局">SoA：为性能而生的布局</a></h3>
+<p>考虑一个极常见的操作：<strong>把整帧点云做坐标变换（3.2 的 $Rp+t$），只用到 x/y/z，不碰 intensity</strong>。或者：<strong>统计所有点的平均强度，只用 intensity，不碰 xyz</strong>。</p>
+<p>在 AoS 里，你想连续读所有的 <code>x</code>，但内存里 <code>x</code> 之间隔着 <code>y z intensity</code>。CPU 从内存搬数据是按**缓存行（cache line，通常 64 字节）**整块搬的。读一个 <code>x</code>（4 字节），却顺带把它后面的 <code>y z intensity</code>（12 字节）也拖进缓存——如果这次操作用不上它们，这 12 字节的带宽就浪费了。而且 SIMD（一条指令处理 8 个 <code>f32</code>）需要数据连续排列，AoS 里 <code>x</code> 不连续，SIMD 用不上。</p>
+<p>**SoA（Structure of Arrays，数组结构体）**反过来：每个字段各存一个连续数组。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// SoA：每个分量一个连续数组。
+pub struct PointCloudSoA {
+    pub x: Vec&lt;f32&gt;,
+    pub y: Vec&lt;f32&gt;,
+    pub z: Vec&lt;f32&gt;,
+    pub intensity: Vec&lt;f32&gt;,
+    // 不变式：四个 Vec 长度相等。
+}
+
+impl PointCloudSoA {
+    pub fn len(&amp;self) -&gt; usize {
+        self.x.len()
+    }
+
+    /// 平移变换只碰 x/y/z：三个数组连续，缓存友好、可 SIMD、可自动向量化。
+    pub fn translate(&amp;mut self, dx: f32, dy: f32, dz: f32) {
+        for v in &amp;mut self.x { *v += dx; }
+        for v in &amp;mut self.y { *v += dy; }
+        for v in &amp;mut self.z { *v += dz; }
+        // intensity 一个字节都没被读进缓存——零浪费。
+    }
+
+    /// 平均强度：只顺序扫 intensity 数组，其它内存完全不碰。
+    pub fn mean_intensity(&amp;self) -&gt; f32 {
+        if self.intensity.is_empty() { return 0.0; }
+        self.intensity.iter().sum::&lt;f32&gt;() / self.intensity.len() as f32
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>现在 <code>x</code> 全部连续排列：整帧遍历时缓存命中率高，编译器还能<strong>自动向量化（auto-vectorization）<strong>成 SIMD 指令。对几十万点的点云，只做几何运算的热路径上，SoA 相比 AoS 常有</strong>数倍</strong>的吞吐提升。这不是玄学，是缓存和内存带宽的物理。</p>
+<blockquote>
+<p><strong>面试题</strong>：处理点云用 SoA 还是 AoS？
+<strong>答</strong>：看访问模式。<strong>批量只碰部分字段</strong>（坐标变换、滤波、统计）用 SoA——缓存友好、可 SIMD。<strong>逐点用到全部字段</strong>（比如按点分类、序列化单个点）AoS 更自然。高性能点云库（PCL 内部、各家自研）大量用 SoA 或 SoA/AoS 混合。没有银弹，工程上按热点操作的访问模式选，甚至两种表示并存、按需转换。</p>
+</blockquote>
+<blockquote>
+<p><strong>真实项目里</strong>：字段选择本身也是内存优化。<code>PointXYZI</code> 是 16 字节，恰好对齐；如果你加个 <code>f64 timestamp</code> 就变 24 字节还可能引入 padding，几十万点乘起来就是几 MB 的差别，直接影响你能不能塞进 L2 缓存。工程上会精打细算每个字段的类型和顺序（<code>f32</code> 而非 <code>f64</code>——激光精度根本用不到 <code>f64</code>）。</p>
+</blockquote>
+<h2 id="零拷贝共享arc-让多模块共读一帧点云"><a class="header" href="#零拷贝共享arc-让多模块共读一帧点云">零拷贝共享：Arc 让多模块共读一帧点云</a></h2>
+<p>现在来个真实场景。一帧点云进来后，<strong>多个下游同时要用它</strong>：地面分割要用、聚类要用、录制模块要存盘。它们大多<strong>只读</strong>。</p>
+<p>最蠢的做法是给每个模块 <code>clone()</code> 一份——几 MB 的点云复制三四遍，内存和带宽双重浪费。Rust 的答案是 <strong><code>Arc&lt;T&gt;</code>（Atomically Reference Counted，原子引用计数）</strong>：数据只存一份在堆上，各模块持有指向它的 <code>Arc</code>，<code>clone</code> 一个 <code>Arc</code> 只是把引用计数 +1（几纳秒），根本不碰底层几 MB 数据。所有 <code>Arc</code> 都释放后，数据自动回收。这就是<strong>零拷贝共享（zero-copy sharing）</strong>。</p>
+<pre><code class="language-rust ignore">use std::sync::Arc;
+
+/// 一帧点云消息，负载用 Arc 包起来，随便克隆分发。
+pub type PointCloudMsg = Message&lt;Arc&lt;PointCloudSoA&gt;&gt;;
+
+fn ground_segmentation(cloud: Arc&lt;PointCloudSoA&gt;) -&gt; Vec&lt;bool&gt; {
+    // 只读，clone 进来的 Arc 只是计数 +1，没有复制点云数据。
+    (0..cloud.len()).map(|i| cloud.z[i] &lt; -1.5).collect() // 粗暴的地面判据示意
+}
+
+fn cluster(cloud: Arc&lt;PointCloudSoA&gt;) -&gt; usize {
+    cloud.len() // 占位
+}
+
+fn dispatch(msg: &amp;PointCloudMsg) {
+    // Arc::clone 是廉价的计数操作，两个下游共享同一份底层数据。
+    let g = ground_segmentation(Arc::clone(&amp;msg.data));
+    let c = cluster(Arc::clone(&amp;msg.data));
+    println!("地面点 {} 个，聚类 {}", g.iter().filter(|&amp;&amp;b| b).count(), c);
+}</code></pre>
+<p><strong>如果某个下游需要修改怎么办？</strong> <code>Arc</code> 默认是共享只读的。三条路：</p>
+<ul>
+<li>用 <code>Arc::make_mut</code>：如果只有你一个持有者就地改，否则**写时复制（copy-on-write）**克隆一份再改——只在真要写时才付出复制代价。</li>
+<li>需要多线程共享可变：<code>Arc&lt;Mutex&lt;T&gt;&gt;</code> 或 <code>Arc&lt;RwLock&lt;T&gt;&gt;</code>（读多写少用 <code>RwLock</code>）。</li>
+<li>更常见的模式：下游不改原数据，而是<strong>产出新数据</strong>（分割结果、聚类标签），原点云始终只读共享。这是最干净的数据流，也符合"传感器数据是不可变事实"的心智模型。</li>
+</ul>
+<blockquote>
+<p><strong>中高级视角</strong>：真正的极致零拷贝还包括<strong>避免从驱动到用户态的那次复制</strong>——用 <code>mmap</code>、DMA、或中间件的共享内存传输（第八部分的 Zenoh/DDS 支持进程间共享内存零拷贝）。<code>Arc</code> 解决的是<strong>同进程内跨模块</strong>的零拷贝，进程间零拷贝是中间件的活儿。分清这两层。</p>
+</blockquote>
+<h2 id="序列化录制与回放的地基"><a class="header" href="#序列化录制与回放的地基">序列化：录制与回放的地基</a></h2>
+<p>数据结构设计好了，还得能<strong>存下来、再读回来</strong>——这就是序列化。它是<strong>数据闭环</strong>的地基：车上跑的时候把所有传感器消息录下来（rosbag、MCAP 等格式），回到办公室<strong>回放（replay）</strong>，就能在真实数据上反复调试、复现那个诡异的 bug、做回归测试。没有录制回放，你连"昨天那个问题"都没法重现。</p>
+<p>Rust 生态里两条主线：</p>
+<h3 id="serde通用序列化框架"><a class="header" href="#serde通用序列化框架">serde：通用序列化框架</a></h3>
+<p><code>serde</code> 是 Rust 序列化的事实标准，加个 derive 就能把结构体转成 JSON、YAML、bincode 等等：</p>
+<pre><code class="language-toml">[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+bincode = "1"
+</code></pre>
+<pre><code class="language-rust ignore">use serde::{Serialize, Deserialize};
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub struct ImuRecord {
+    pub stamp_ns: u64,
+    pub gx: f64, pub gy: f64, pub gz: f64,
+    pub ax: f64, pub ay: f64, pub az: f64,
+}
+
+fn roundtrip(sample: &amp;ImuRecord) -&gt; ImuRecord {
+    // 存盘/传输用二进制 bincode：紧凑、快。调试看内容用 JSON。
+    let bytes = bincode::serialize(sample).unwrap();
+    bincode::deserialize(&amp;bytes).unwrap()
+}</code></pre>
+<p><strong>JSON 给人看（调试、配置），bincode/二进制给机器存（录制、传输）</strong>——JSON 把一个 <code>f64</code> 存成十几个字符，几十万点的点云用 JSON 存盘会大到离谱且慢，二进制才是正解。</p>
+<h3 id="protobuf--prost跨语言带-schema-演进"><a class="header" href="#protobuf--prost跨语言带-schema-演进">protobuf / prost：跨语言、带 schema 演进</a></h3>
+<p>当数据要<strong>跨语言</strong>（车上 Rust，云端 Python 分析）或<strong>长期存储需要兼容旧格式</strong>时，<code>serde</code> 的自描述格式就不够了，你需要 <strong>protobuf</strong>——用 <code>.proto</code> 文件显式定义 schema，字段带编号，支持向后/向前兼容的<strong>schema 演进</strong>（加字段不破坏旧数据）。Rust 里用 <code>prost</code>：</p>
+<pre><code class="language-proto">// sensor.proto
+syntax = "proto3";
+message PointCloudProto {
+  uint64 stamp_ns = 1;
+  string frame_id = 2;
+  repeated float x = 3;   // 天然就是 SoA 布局！
+  repeated float y = 4;
+  repeated float z = 5;
+  repeated float intensity = 6;
+}
+</code></pre>
+<p>注意 protobuf 的 <code>repeated float</code> 编码本身就是 SoA 式的——每个字段一个连续数组，和我们前面的 <code>PointCloudSoA</code> 天然契合。<code>prost</code> 会把这个 <code>.proto</code> 生成对应的 Rust 结构体，你的录制文件就能被任何支持 protobuf 的语言读写。这正是<strong>为什么工业界的传感器录制格式（如基于 protobuf 的 MCAP）能同时服务 Rust 采集端和 Python 分析端</strong>。</p>
+<blockquote>
+<p><strong>本书关联</strong>：你工作环境里那个 <code>inf/</code> 目录（把 Python 推理流水线移植成 Rust 的 SDK），跑的正是"读录制数据 → 喂模型推理 → 产出结构化结果"的离线流程。这类离线推理/评测<strong>必须</strong>建立在稳定的序列化格式之上——录制端和推理端对同一份 <code>.proto</code> 达成一致，才能让 Rust 采集的数据被 Rust（或 Python）推理端正确读出。数据模型的设计，直接决定了数据闭环转不转得动。</p>
+</blockquote>
+<h3 id="选型一句话"><a class="header" href="#选型一句话">选型一句话</a></h3>
+<ul>
+<li><strong>同进程传递</strong>：<code>Arc&lt;T&gt;</code>，根本不序列化。</li>
+<li><strong>本地录制/回放</strong>：bincode 或 MCAP，紧凑快。</li>
+<li><strong>跨语言/长期兼容</strong>：protobuf（prost）。</li>
+<li><strong>人要读的配置/调试</strong>：JSON/YAML。</li>
+</ul>
+<h2 id="把一切串起来一帧的生命"><a class="header" href="#把一切串起来一帧的生命">把一切串起来：一帧的生命</a></h2>
+<p>用一段伪代码收束整个第三部分，看这些数据结构如何协同：</p>
+<pre><code class="language-rust ignore">// 1. 驱动产出原始点云，打上头（3.3 的时间戳 + 3.2 的 frame_id）
+let msg: PointCloudMsg = Message {
+    header: Header { stamp_ns: now_ns(), frame_id: FrameId::LidarTop, seq: 1024 },
+    data: Arc::new(raw_cloud_soa),   // 大数据用 Arc，为零拷贝分发
+};
+
+// 2. 时间对齐（3.3）：和相机、雷达凑成同一时刻的帧组
+//    time_sync_buffer.push(...) 输出对齐的 msg 组
+
+// 3. 坐标变换（3.2）：查 frame_id 对应的 lidar_to_ego，把点云搬到车体系
+//    (SoA 布局让这步缓存友好、可 SIMD)
+
+// 4. 零拷贝分发（本章）：Arc::clone 给感知各下游，各自只读
+
+// 5. 录制（本章）：序列化落盘，供日后回放调试
+
+// 至此，一帧原始点云变成了对齐、统一坐标、可共享、可回放的"事实"，
+// 交给第四部分的感知去理解它。</code></pre>
+<h2 id="小结"><a class="header" href="#小结">小结</a></h2>
+<ul>
+<li>用统一的 <strong><code>Header</code>（时间戳 + <code>frame_id</code> + seq）+ 泛型 <code>Message&lt;T&gt;</code></strong> 包装所有传感器消息；<code>frame_id</code> 用枚举，让编译器挡住坐标系拼写错误。</li>
+<li><strong>数据大小决定所有权策略</strong>：IMU/GNSS 小，<code>Copy</code>；图像/点云大，堆上 <code>Vec</code>，绝不随意 <code>clone</code>。图像记得存显式 <code>step</code> 应对行填充。</li>
+<li><strong>SoA vs. AoS</strong>：批量只碰部分字段（坐标变换、滤波、统计）用 <strong>SoA</strong>，缓存友好、可 SIMD、常快数倍；逐点用全字段用 AoS。按热点访问模式选，是中高级性能工程的分水岭。</li>
+<li><strong><code>Arc&lt;T&gt;</code> 做同进程零拷贝共享</strong>：多个只读下游共用一份点云，<code>clone</code> 只增计数不复制数据；需可变时用 <code>make_mut</code>（写时复制）或 <code>Arc&lt;RwLock&lt;T&gt;&gt;</code>。进程间零拷贝是中间件的活儿。</li>
+<li><strong>序列化撑起数据闭环</strong>：JSON 给人看、bincode/MCAP 本地录制、protobuf(prost) 跨语言与 schema 演进。protobuf 的 <code>repeated</code> 天然是 SoA。</li>
+<li>第三部分至此闭环：一帧数据从原始字节，经<strong>时间对齐、坐标统一、零拷贝共享、序列化录制</strong>，变成干净可靠的"世界事实"。</li>
+</ul>
+<p>第三部分到此结束。你已经掌握了传感器的物理直觉、坐标变换的数学、时间同步的工程、以及表达数据的 Rust 功底——这四样是感知、定位、规划的<strong>共同地基</strong>。翻开第四部分，我们要在这块地基上盖第一座大楼：<strong>感知</strong>，让车真正"看懂"它周围的世界。</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../part3/time-sync.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../part3/calibration.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../part3/time-sync.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../part3/calibration.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

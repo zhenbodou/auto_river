@@ -1,0 +1,492 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN" class="rust" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>5.2 定位：GNSS/IMU 组合导航与地图匹配 - Rust 智能驾驶开发：从小白到工程师</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="一本面向零基础读者、以 Rust 为主语言、系统讲解自动驾驶软件开发的实战教程。">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+        <!-- MathJax -->
+        <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "rust";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../preface.html">前言：这本书能带你到哪里</a></li><li class="chapter-item expanded affix "><a href="../how-to-use.html">如何使用本书</a></li><li class="chapter-item expanded affix "><li class="part-title">第一部分 · 认识智能驾驶</li><li class="chapter-item expanded "><a href="../part1/levels.html"><strong aria-hidden="true">1.</strong> 1.1 什么是自动驾驶：从 L0 到 L5</a></li><li class="chapter-item expanded "><a href="../part1/architecture.html"><strong aria-hidden="true">2.</strong> 1.2 一辆自动驾驶车的软件全景</a></li><li class="chapter-item expanded "><a href="../part1/pipeline.html"><strong aria-hidden="true">3.</strong> 1.3 感知—定位—预测—规划—控制 五大模块</a></li><li class="chapter-item expanded "><a href="../part1/why-rust.html"><strong aria-hidden="true">4.</strong> 1.4 为什么在智能驾驶里用 Rust</a></li><li class="chapter-item expanded "><a href="../part1/industry.html"><strong aria-hidden="true">5.</strong> 1.5 行业现状、岗位与技术栈地图</a></li><li class="chapter-item expanded affix "><li class="part-title">第二部分 · 面向智驾的 Rust 语言基础</li><li class="chapter-item expanded "><a href="../part2/setup.html"><strong aria-hidden="true">6.</strong> 2.1 搭建 Rust 开发环境</a></li><li class="chapter-item expanded "><a href="../part2/ownership.html"><strong aria-hidden="true">7.</strong> 2.2 所有权、借用与生命周期</a></li><li class="chapter-item expanded "><a href="../part2/traits.html"><strong aria-hidden="true">8.</strong> 2.3 类型系统、trait 与泛型</a></li><li class="chapter-item expanded "><a href="../part2/errors.html"><strong aria-hidden="true">9.</strong> 2.4 错误处理：Result、Option 与 anyhow</a></li><li class="chapter-item expanded "><a href="../part2/concurrency.html"><strong aria-hidden="true">10.</strong> 2.5 并发与异步：线程、channel、tokio</a></li><li class="chapter-item expanded "><a href="../part2/ecosystem.html"><strong aria-hidden="true">11.</strong> 2.6 智驾常用 crate 生态速览</a></li><li class="chapter-item expanded "><a href="../part2/performance-ffi.html"><strong aria-hidden="true">12.</strong> 2.7 性能工程、unsafe 与 C/C++ FFI</a></li><li class="chapter-item expanded affix "><li class="part-title">第三部分 · 传感器、坐标系与数据</li><li class="chapter-item expanded "><a href="../part3/sensors.html"><strong aria-hidden="true">13.</strong> 3.1 传感器全家福：相机、激光雷达、毫米波、IMU、GNSS</a></li><li class="chapter-item expanded "><a href="../part3/coordinates.html"><strong aria-hidden="true">14.</strong> 3.2 坐标系与刚体变换</a></li><li class="chapter-item expanded "><a href="../part3/time-sync.html"><strong aria-hidden="true">15.</strong> 3.3 时间戳、同步与数据流</a></li><li class="chapter-item expanded "><a href="../part3/data-model.html"><strong aria-hidden="true">16.</strong> 3.4 用 Rust 表达传感器数据</a></li><li class="chapter-item expanded "><a href="../part3/calibration.html"><strong aria-hidden="true">17.</strong> 3.5 传感器标定、运动补偿与在线健康监测</a></li><li class="chapter-item expanded affix "><li class="part-title">第四部分 · 感知</li><li class="chapter-item expanded "><a href="../part4/overview.html"><strong aria-hidden="true">18.</strong> 4.1 感知任务总览</a></li><li class="chapter-item expanded "><a href="../part4/image.html"><strong aria-hidden="true">19.</strong> 4.2 图像处理基础与 Rust 实现</a></li><li class="chapter-item expanded "><a href="../part4/inference.html"><strong aria-hidden="true">20.</strong> 4.3 深度学习推理：onnxruntime / tract / candle</a></li><li class="chapter-item expanded "><a href="../part4/pointcloud.html"><strong aria-hidden="true">21.</strong> 4.4 点云处理与激光雷达感知</a></li><li class="chapter-item expanded "><a href="../part4/tracking-fusion.html"><strong aria-hidden="true">22.</strong> 4.5 多目标跟踪与传感器融合</a></li><li class="chapter-item expanded "><a href="../part4/data-loop.html"><strong aria-hidden="true">23.</strong> 4.6 感知数据闭环与量产评测</a></li><li class="chapter-item expanded affix "><li class="part-title">第五部分 · 定位、建图与状态估计</li><li class="chapter-item expanded "><a href="../part5/kalman.html"><strong aria-hidden="true">24.</strong> 5.1 状态估计与卡尔曼滤波</a></li><li class="chapter-item expanded "><a href="../part5/localization.html" class="active"><strong aria-hidden="true">25.</strong> 5.2 定位：GNSS/IMU 组合导航与地图匹配</a></li><li class="chapter-item expanded "><a href="../part5/slam-hdmap.html"><strong aria-hidden="true">26.</strong> 5.3 SLAM 与高精地图概览</a></li><li class="chapter-item expanded affix "><li class="part-title">第六部分 · 预测与规划</li><li class="chapter-item expanded "><a href="../part6/prediction.html"><strong aria-hidden="true">27.</strong> 6.1 行为预测</a></li><li class="chapter-item expanded "><a href="../part6/planning.html"><strong aria-hidden="true">28.</strong> 6.2 路径与轨迹规划</a></li><li class="chapter-item expanded "><a href="../part6/decision.html"><strong aria-hidden="true">29.</strong> 6.3 决策与行为规划</a></li><li class="chapter-item expanded affix "><li class="part-title">第七部分 · 控制</li><li class="chapter-item expanded "><a href="../part7/vehicle-model.html"><strong aria-hidden="true">30.</strong> 7.1 车辆运动学与动力学模型</a></li><li class="chapter-item expanded "><a href="../part7/control.html"><strong aria-hidden="true">31.</strong> 7.2 横向与纵向控制：PID 到 MPC</a></li><li class="chapter-item expanded affix "><li class="part-title">第八部分 · 中间件与系统集成</li><li class="chapter-item expanded "><a href="../part8/middleware.html"><strong aria-hidden="true">32.</strong> 8.1 自动驾驶中间件全景</a></li><li class="chapter-item expanded "><a href="../part8/ros2-rclrs.html"><strong aria-hidden="true">33.</strong> 8.2 ROS 2 与 rclrs：用 Rust 写节点</a></li><li class="chapter-item expanded "><a href="../part8/zenoh-dds.html"><strong aria-hidden="true">34.</strong> 8.3 Zenoh、DDS 与零拷贝通信</a></li><li class="chapter-item expanded "><a href="../part8/messages.html"><strong aria-hidden="true">35.</strong> 8.4 消息定义与序列化</a></li><li class="chapter-item expanded "><a href="../part8/runtime-engineering.html"><strong aria-hidden="true">36.</strong> 8.5 运行时工程：背压、可观测性与资源预算</a></li><li class="chapter-item expanded affix "><li class="part-title">第九部分 · 仿真、测试与安全</li><li class="chapter-item expanded "><a href="../part9/simulation.html"><strong aria-hidden="true">37.</strong> 9.1 仿真：CARLA 与数据回放</a></li><li class="chapter-item expanded "><a href="../part9/testing.html"><strong aria-hidden="true">38.</strong> 9.2 测试策略：单元、集成与录制回放</a></li><li class="chapter-item expanded "><a href="../part9/safety.html"><strong aria-hidden="true">39.</strong> 9.3 功能安全、实时性与部署</a></li><li class="chapter-item expanded "><a href="../part9/cybersecurity.html"><strong aria-hidden="true">40.</strong> 9.4 汽车网络安全、供应链与安全 OTA</a></li><li class="chapter-item expanded "><a href="../part9/safety-case.html"><strong aria-hidden="true">41.</strong> 9.5 系统工程、安全论证与故障注入</a></li><li class="chapter-item expanded affix "><li class="part-title">第十部分 · 实战与职业</li><li class="chapter-item expanded "><a href="../part10/project.html"><strong aria-hidden="true">42.</strong> 10.1 实战项目：搭一个最小自动驾驶栈</a></li><li class="chapter-item expanded "><a href="../part10/career.html"><strong aria-hidden="true">43.</strong> 10.2 学习路线图与求职准备</a></li><li class="chapter-item expanded "><a href="../part10/glossary.html"><strong aria-hidden="true">44.</strong> 10.3 常见术语表</a></li><li class="chapter-item expanded "><a href="../part10/competency.html"><strong aria-hidden="true">45.</strong> 10.4 逐章能力验收与作品集证据</a></li><li class="chapter-item expanded "><a href="../part10/capstone.html"><strong aria-hidden="true">46.</strong> 10.5 中高级毕业项目：从最小栈到可评审系统</a></li><li class="chapter-item expanded affix "><li class="spacer"></li><li class="chapter-item expanded affix "><a href="../afterword.html">后记与延伸资源</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Rust 智能驾驶开发：从小白到工程师</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="52-定位gnssimu-组合导航与地图匹配"><a class="header" href="#52-定位gnssimu-组合导航与地图匹配">5.2 定位：GNSS/IMU 组合导航与地图匹配</a></h1>
+<p>上一节我们把卡尔曼滤波这台"融合机器"造好了。这一节把它开上路——回答自动驾驶里那个看似简单、实则要人命的问题：<strong>车此刻在世界的哪个位置、朝哪个方向？</strong></p>
+<p>你可能觉得"不就是 GPS 吗，手机都能定位"。但手机导航把你定位到"这条路上"就够了，误差十几米无所谓；自动驾驶要知道自己在<strong>哪条车道的哪个位置</strong>，误差得压到<strong>厘米到分米级</strong>，还得在 GPS 完全失效的隧道里连续几十秒不飘。这中间的鸿沟，就是这一章的内容。定位做不好，后面的预测、规划、控制全建在流沙上——它是整个自动驾驶栈里最"低调但致命"的模块。</p>
+<h2 id="一定位问题的严格定义"><a class="header" href="#一定位问题的严格定义">一、定位问题的严格定义</a></h2>
+<p>定位（localization）要输出的，是自车在某个<strong>地图坐标系（map frame）</strong> 下的 <strong>6 自由度位姿（6-DoF pose）</strong>：3 个平移（位置 $x,y,z$）+ 3 个旋转（航向 yaw、俯仰 pitch、横滚 roll）。我们复用第 1.3 节定义的 <code>Pose</code>：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy)]
+pub struct Pose {
+    pub position: [f64; 3],   // 在“地图坐标系”下的位置 (米)
+    pub yaw: f64,             // 航向角 (弧度)
+    pub pitch: f64,
+    pub roll: f64,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>但一个上路的定位系统，光给位姿是不够的，它必须同时给出<strong>这个位姿有多可信</strong>——也就是协方差。所以工程上真正的定位输出更像这样：</p>
+<pre><code class="language-rust ignore">/// 带不确定性的定位结果。规划/控制需要根据协方差决定“敢开多快、敢贴多近”
+#[derive(Debug, Clone)]
+pub struct LocalizationResult {
+    pub pose: Pose,
+    pub velocity: [f64; 3],       // 地图系下的速度
+    pub covariance: [[f64; 6]; 6],// 6-DoF 位姿协方差（回忆 5.1 的 P）
+    pub status: LocalizationStatus,
+    pub timestamp: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum LocalizationStatus {
+    Aligning,     // 初始化对齐中，结果不可用
+    Good,         // 多源可用，高精度
+    Degraded,     // 部分源失效，靠推算维持，精度下降
+    Lost,         // 已发散，下游必须降级处理
+}</code></pre>
+<p>注意 <code>status</code> 字段——<strong>定位系统必须诚实地告诉下游"我现在行不行"</strong>。一个假装自己还很准、实则已经在隧道里飘了 20 米的定位模块，比一个老实说"我 Degraded 了"的危险得多。这个诚实性，是安全设计的一部分。</p>
+<p>关于地图坐标系：因为地球是曲面，全局用经纬度不方便做平面几何，实践中通常把局部区域投影到<strong>平面直角坐标系</strong>——常用 <strong>UTM（Universal Transverse Mercator）</strong> 投影，或者以某个原点建立的<strong>局部东北天（ENU: East-North-Up）</strong> 坐标系。定位和高精地图共用这一套坐标，规划才能在同一个平面上算几何。坐标系与刚体变换的细节见第 3.2 节，这里只需记住：<strong>定位的输出、高精地图、感知结果最终都要被搬到同一个坐标系里对齐</strong>，这是万物的前提。</p>
+<h2 id="二gnssrtk能给你绝对位置但不总在"><a class="header" href="#二gnssrtk能给你绝对位置但不总在">二、GNSS/RTK：能给你绝对位置，但不总在</a></h2>
+<p><strong>GNSS（Global Navigation Satellite System，全球卫星导航系统）</strong> 是 GPS、北斗、GLONASS、Galileo 的统称。原理是<strong>三边测量</strong>：接收机测出自己到 4 颗以上卫星的距离（靠信号飞行时间），解一个方程组得到 3D 位置 + 钟差。为什么要 4 颗而不是 3 颗？因为接收机的时钟和卫星原子钟不同步，多出一个未知的钟差，需要第 4 个方程来解。</p>
+<p>裸 GNSS 的精度只有<strong>米级</strong>，远不够用。要到厘米级，靠 <strong>RTK（Real-Time Kinematic，实时动态差分）</strong>：在已知精确坐标的地面<strong>基站</strong>上放一台接收机，它测出"卫星信号误差"（电离层延迟、对流层延迟、卫星轨道误差这些对邻近区域几乎相同的系统误差），实时播发给车上的<strong>流动站</strong>做差分改正。RTK 好的时候能到 <strong>1~2 厘米</strong>，是量产定位的重要一环。</p>
+<p><strong>但 GNSS 的局限，恰恰在自动驾驶最需要的地方暴露</strong>：</p>
+<ul>
+<li><strong>城市峡谷（urban canyon）</strong>：高楼把卫星信号挡住或反射。<strong>多路径（multipath）</strong> 是头号杀手——信号撞墙再进天线，飞行时间变长，位置能瞬间跳偏几十米，而且接收机常常不知道自己错了（还报着高置信度）。这是定位里最阴险的野值来源。</li>
+<li><strong>隧道、地库、高架桥下</strong>：直接没信号。GNSS 输出中断，一秒都没有。</li>
+<li><strong>RTK 的额外脆弱</strong>：依赖基站数据链（4G/专网）不断线，依赖"整周模糊度固定"（fix）状态——一旦失锁重新收敛要数秒，这几秒里精度掉到分米甚至米级。</li>
+<li><strong>更新率低</strong>：典型 GNSS 只有 <strong>1~10 Hz</strong>，而车 100 km/h 时 10 Hz 意味着两帧之间已经开出去近 3 米。控制环需要更高频、更平滑的位姿。</li>
+</ul>
+<p>结论很清楚：<strong>GNSS 给你宝贵的"绝对位置锚点"，但它低频、间歇、偶尔骗你。你不能直接用它开车，必须把它和别的东西融合。</strong> 那个"别的东西"，第一个就是 IMU。</p>
+<h2 id="三imu-航位推算高频平滑但会漂"><a class="header" href="#三imu-航位推算高频平滑但会漂">三、IMU 航位推算：高频平滑，但会漂</a></h2>
+<p><strong>IMU（Inertial Measurement Unit，惯性测量单元）</strong> 提供<strong>高频</strong>（100~1000 Hz）的 3 轴加速度和 3 轴角速度。它的美妙之处是<strong>完全自包含</strong>——不依赖任何外部信号，隧道里、地库里照样工作。</p>
+<p><strong>航位推算（dead reckoning）</strong> 就是纯靠 IMU 递推位姿：把角速度积分得到姿态，把加速度（先用姿态转到地图系、扣掉重力）积分一次得速度、再积分一次得位置。听起来完美，直到你意识到那个致命词：<strong>积分</strong>。</p>
+<p>IMU 每个读数都有小小的偏置（bias）和噪声。加速度积分<strong>两次</strong>才到位置，误差被<strong>双重积分放大</strong>——bias 里一个恒定的小偏差，积分两次会变成随时间<strong>平方增长</strong>的位置误差。这叫<strong>漂移（drift）</strong>。一个消费级 IMU 纯推算几秒钟就能飘出几米；哪怕是昂贵的战术级 IMU，纯惯性也撑不了太久。</p>
+<p>所以 IMU 单独用不了，但它和 GNSS 是天生一对：</p>
+<div class="table-wrapper"><table><thead><tr><th>维度</th><th>GNSS/RTK</th><th>IMU</th></tr></thead><tbody>
+<tr><td>误差特性</td><td><strong>无偏</strong>但有噪声、会跳变</td><td>短期<strong>极平滑</strong>、长期<strong>漂移</strong></td></tr>
+<tr><td>频率</td><td>低（1~10 Hz）</td><td>高（100~1000 Hz）</td></tr>
+<tr><td>可用性</td><td>露天好，遮挡处失效</td><td>永远可用</td></tr>
+<tr><td>绝对/相对</td><td>绝对位置</td><td>相对增量</td></tr>
+</tbody></table>
+</div>
+<p>一个管"长期不跑偏"、一个管"短期平滑高频"，完美互补。把它们融合的技术，就叫<strong>组合导航（integrated navigation）</strong>，而融合的引擎，正是上一章的（扩展）卡尔曼滤波。</p>
+<h2 id="四gnssimu-组合导航把-51-接到车上"><a class="header" href="#四gnssimu-组合导航把-51-接到车上">四、GNSS/IMU 组合导航：把 5.1 接到车上</a></h2>
+<p>组合导航的思路，直接就是 5.1 里那个 GPS+IMU 玩具例子的工业升级版：</p>
+<ul>
+<li><strong>IMU 驱动预测步（高频）</strong>：每来一帧 IMU（比如 200 Hz），用它的角速度、加速度做一次状态预测。这一步让位姿以 IMU 的高频率平滑更新，$P$ 逐渐增大。</li>
+<li><strong>GNSS 驱动更新步（低频）</strong>：每来一帧 GNSS（比如 5 Hz），把它当测量做一次更新，把估计拉回绝对位置，$P$ 被拉小。</li>
+<li>因为姿态、重力方向都非线性，实际用的是 <strong>EKF</strong>（回忆 5.1 第六节）。</li>
+</ul>
+<p>一个能长期稳定的组合导航，状态里不只有位姿速度，<strong>还要把 IMU 的偏置也当成状态估进去</strong>——这是量产系统和教科书例子的关键差别。因为 bias 会缓慢漂移，你得让滤波器实时估计它并扣除，否则漂移照旧。典型 15 维状态（这就是业界常说的 ESKF / error-state 组合导航的规模）：</p>
+<p>$$
+x = [,\underbrace{p_x,p_y,p_z}<em>{\text{位置}},\ \underbrace{v_x,v_y,v_z}</em>{\text{速度}},\ \underbrace{\phi,\theta,\psi}<em>{\text{姿态}},\ \underbrace{b</em>{a,x},b_{a,y},b_{a,z}}<em>{\text{加速度计偏置}},\ \underbrace{b</em>{g,x},b_{g,y},b_{g,z}}_{\text{陀螺偏置}},]
+$$</p>
+<p>在写代码前，先厘清一个每个组合导航工程师都要能张口就答的概念——<strong>松耦合与紧耦合（loose vs tight coupling）</strong>：</p>
+<ul>
+<li><strong>松耦合（loosely coupled）</strong>：GNSS 接收机先自己解算出"位置/速度"这个成品，再作为测量喂进 EKF。简单、模块解耦，是入门和很多量产系统的选择。缺点是当可见卫星少于 4 颗（城市峡谷常见）时，接收机根本给不出解，这一路就整个哑了。</li>
+<li><strong>紧耦合（tightly coupled）</strong>：不等接收机出成品，直接把<strong>原始伪距、多普勒</strong>（每颗卫星的测量）喂进 EKF。哪怕只看得到 2~3 颗星，这些"半成品"仍能约束状态。城市峡谷里紧耦合明显更稳，代价是实现复杂、要处理卫星钟差/星历等一堆底层细节。</li>
+<li>还有<strong>深耦合（deeply/ultra-tightly coupled）</strong>，把融合结果反馈去辅助接收机的信号跟踪环路，主要见于军用/高动态场景，量产少见。</li>
+</ul>
+<p>本节代码演示的是<strong>松耦合</strong>（GNSS 出 $[x,y]$ 位置成品再融合），因为它最能凸显 5.1 那套预测/更新的骨架。理解了它，紧耦合无非是把观测方程从"位置"换成"到每颗卫星的伪距"（一个非线性 $h$，又要用 EKF 求雅可比了）。</p>
+<blockquote>
+<p><strong>面试题</strong>：城市峡谷里为什么紧耦合比松耦合抗得住？
+<strong>答</strong>：松耦合要求接收机先解出位置，而解位置至少需要 4 颗可见卫星；高楼遮挡下常常不够，松耦合直接无输出。紧耦合用原始伪距，2~3 颗星的测量也能约束滤波器状态，不至于整路失联——它把"够不够解算"的门槛，从接收机层下放到了融合层。</p>
+</blockquote>
+<p>下面是一个<strong>组合导航 EKF（松耦合）的 Rust 骨架</strong>。为了聚焦融合逻辑，我把状态简化成 2D 平面（位置 2 + 速度 2 + 航向 1 + 陀螺 bias 1 = 6 维），但结构和 15 维完全一致，你能直接看出怎么扩展。用 <code>nalgebra</code> 的动态或定长矩阵均可，这里用定长 <code>SMatrix</code> 表意最清楚。</p>
+<pre><code class="language-rust ignore">use nalgebra::{SMatrix, SVector};
+
+const N: usize = 6; // 状态维数: [x, y, vx, vy, yaw, gyro_bias]
+type StateVec = SVector&lt;f64, N&gt;;
+type StateMat = SMatrix&lt;f64, N, N&gt;;
+
+pub struct IntegratedNav {
+    x: StateVec,    // 状态估计
+    p: StateMat,    // 协方差 P
+    q: StateMat,    // 过程噪声 Q（IMU 噪声 + bias 随机游走）
+    last_imu_t: f64,
+}
+
+impl IntegratedNav {
+    /// 预测步：IMU 到达时调用。accel 为车体系加速度，gyro 为绕 z 的角速度。
+    pub fn predict_with_imu(&amp;mut self, accel_body: [f64; 2], gyro_z: f64, t: f64) {
+        let dt = t - self.last_imu_t;
+        self.last_imu_t = t;
+        if dt &lt;= 0.0 || dt &gt; 0.5 { return; } // 时间戳异常保护
+
+        let yaw = self.x[4];
+        let bias = self.x[5];
+        let omega = gyro_z - bias;                  // 扣除陀螺 bias
+        let (s, c) = (yaw.sin(), yaw.cos());
+
+        // 车体系加速度旋到地图系（非线性来源之一）
+        let ax_map = c * accel_body[0] - s * accel_body[1];
+        let ay_map = s * accel_body[0] + c * accel_body[1];
+
+        // --- 非线性状态预测 x⁻ = f(x, u)（EKF 用原函数推均值）---
+        let mut xp = self.x;
+        xp[0] += self.x[2] * dt + 0.5 * ax_map * dt * dt; // x
+        xp[1] += self.x[3] * dt + 0.5 * ay_map * dt * dt; // y
+        xp[2] += ax_map * dt;                             // vx
+        xp[3] += ay_map * dt;                             // vy
+        xp[4] += omega * dt;                              // yaw
+        // xp[5] bias 建模为随机游走，均值不变
+        self.x = xp;
+
+        // --- 雅可比 F = ∂f/∂x，代入当前估计点 ---
+        let mut f = StateMat::identity();
+        f[(0, 2)] = dt;
+        f[(1, 3)] = dt;
+        // yaw 对位置/速度的偏导（因加速度旋转依赖 yaw）
+        f[(2, 4)] = (-s * accel_body[0] - c * accel_body[1]) * dt;
+        f[(3, 4)] = ( c * accel_body[0] - s * accel_body[1]) * dt;
+        f[(4, 5)] = -dt; // yaw 对 gyro_bias
+
+        // 协方差预测 P⁻ = F P Fᵀ + Q·dt（Q 按时间缩放）
+        self.p = f * self.p * f.transpose() + self.q * dt;
+    }
+
+    /// 更新步：GNSS 到达时调用，测量 = 平面位置 [x, y]
+    pub fn update_with_gnss(&amp;mut self, gnss_xy: [f64; 2], gnss_std: f64) -&gt; bool {
+        // 观测矩阵 H：只测位置两维
+        let mut h = SMatrix::&lt;f64, 2, N&gt;::zeros();
+        h[(0, 0)] = 1.0;
+        h[(1, 1)] = 1.0;
+
+        let r = SMatrix::&lt;f64, 2, 2&gt;::identity() * (gnss_std * gnss_std);
+        let z = SVector::&lt;f64, 2&gt;::new(gnss_xy[0], gnss_xy[1]);
+
+        let y = z - h * self.x;                       // 新息
+        let s = h * self.p * h.transpose() + r;       // 新息协方差
+        let s_inv = match s.try_inverse() {
+            Some(v) =&gt; v,
+            None =&gt; return false,
+        };
+
+        // --- 野值门控：马氏距离超阈值就拒绝这次 GNSS（城市峡谷多路径必备）---
+        let nis = (y.transpose() * s_inv * y)[(0, 0)];
+        if nis &gt; 9.21 { // 2 自由度卡方 99% 分位
+            return false; // 丢弃：很可能是多路径野值
+        }
+
+        let k = self.p * h.transpose() * s_inv;       // 卡尔曼增益
+        self.x += k * y;
+
+        // Joseph form 保正定（回忆 5.1 第八节）
+        let ikh = StateMat::identity() - k * h;
+        self.p = ikh * self.p * ikh.transpose() + k * r * k.transpose();
+        // 对称化，抹平浮点误差
+        self.p = (self.p + self.p.transpose()) * 0.5;
+        true
+    }
+
+    pub fn pose(&amp;self) -&gt; ([f64; 2], f64) {
+        ([self.x[0], self.x[1]], self.x[4])
+    }
+}</code></pre>
+<p>这个骨架已经包含了量产组合导航的<strong>四个关键动作</strong>：IMU 高频预测、GNSS 低频更新、bias 在线估计、<strong>野值门控</strong>。把它扩到 3D、加上加速度计 bias 和横滚俯仰，就是一个真正上路的组合导航核心。注意门控那几行——正是它让系统在城市峡谷里能自动识别并丢弃多路径跳变，而不是被带飞。</p>
+<blockquote>
+<p><strong>面试题</strong>：为什么组合导航要把 IMU 的 bias 放进状态向量一起估，而不是开机标定好就固定？
+<strong>答</strong>：因为 bias 会随温度、时间缓慢漂移（bias instability），开机标定的值几分钟后就不准了。放进状态里，滤波器能借助 GNSS 的绝对位置<strong>持续观测并修正</strong> bias——这也解释了为什么隧道里待久了精度会掉：没有 GNSS，bias 就没法被继续校正，漂移重新占上风。</p>
+</blockquote>
+<h2 id="五轮速里程计便宜好用的第三只手"><a class="header" href="#五轮速里程计便宜好用的第三只手">五、轮速里程计：便宜好用的第三只手</a></h2>
+<p>车轮上的<strong>轮速编码器</strong>能给出每个轮子的转速，乘以轮子周长就是行驶距离。结合前轮转角（或左右轮差速），可以推算车辆的运动增量——这叫<strong>轮速里程计（wheel odometry）</strong>，本质是另一种航位推算，但特性和 IMU 不同：</p>
+<ul>
+<li><strong>优点</strong>：几乎免费（车本来就有轮速传感器）、纵向距离测量在正常行驶时相当准、低速和静止时比 IMU 可靠（IMU 静止时积分噪声反而突出）。</li>
+<li><strong>缺点</strong>：<strong>打滑（slip）</strong> 时彻底失效——冰雪路面、急加速急刹、原地打方向，轮子转了车没动（或反之），里程计会撒谎。转弯时轮胎侧滑也引入误差。</li>
+</ul>
+<p>工程上把轮速也作为一路观测融进 EKF：正常行驶时它给纵向速度一个可靠约束，尤其在 GNSS 失效的隧道里，"IMU + 轮速"的组合比"纯 IMU"漂得慢得多。一个特别有用的技巧是<strong>零速修正（ZUPT, Zero-velocity Update）</strong>：当轮速和 IMU 都判定车静止时，往滤波器塞一个"速度 = 0"的强测量，能狠狠压住静止时的漂移和 bias。</p>
+<h2 id="六地图匹配定位让环境本身告诉你在哪"><a class="header" href="#六地图匹配定位让环境本身告诉你在哪">六、地图匹配定位：让环境本身告诉你在哪</a></h2>
+<p>到这里，"GNSS+IMU+轮速"的组合导航已经能给出连续位姿，但在长隧道、卫星长期遮挡时仍会慢慢漂。要真正做到厘米级且不漂，还得让<strong>环境特征</strong>参与进来——车看到的车道线、路牌、杆状物，本身就藏着位置信息，因为它们在高精地图里有精确坐标。</p>
+<h3 id="基于地图特征的匹配"><a class="header" href="#基于地图特征的匹配">基于地图特征的匹配</a></h3>
+<p>思路：感知模块检测出车道线、交通标志、路灯杆等<strong>地图里也标注了的语义特征</strong>，把"我观测到的特征位置"和"地图里该特征的位置"对齐，反推自车位姿。</p>
+<p>举横向定位一个最实用的例子：车道线。感知说"我右侧 1.6 米有一条车道线"，高精地图说"这条车道线在地图系的 $y=100.0$"。如果我当前估计的位姿让这两者对不上，差值就是一个可以喂进 EKF 的<strong>观测</strong>——它专门修正<strong>横向位置和航向</strong>，恰好补上 GNSS 在城市里最弱的那一环。这就是为什么很多量产 L2+ 系统在 GNSS 不佳时仍能稳稳保持车道居中：<strong>车道线观测在托底</strong>。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// 一次车道线横向观测：把“我离车道线多远”与地图对齐，修正横向位姿
+pub struct LaneObservation {
+    pub lateral_offset: f64,  // 感知测得的自车到该车道线的横向距离 (米)
+    pub map_lane_y: f64,      // 地图中该车道线在地图系的横向坐标
+    pub std: f64,             // 观测标准差 → R
+}
+// 观测方程: z = map_lane_y - ego_y  ⇒ 新息 = 观测 offset - 预测 offset
+// H 对 y 维为 -1，是一个典型的一维更新，套 5.1 的 update 流程即可。
+<span class="boring">}</span></code></pre></pre>
+<h3 id="点云配准定位ndt-与-icp"><a class="header" href="#点云配准定位ndt-与-icp">点云配准定位：NDT 与 ICP</a></h3>
+<p>更强的一类是<strong>激光雷达点云配准定位</strong>：预先用采集车把整个区域扫成一张<strong>点云地图（point cloud map）</strong>，车上实时扫到的一帧点云去和这张地图<strong>对齐</strong>，对齐所需的那个变换，就是车的位姿。两大经典算法（概念层面，第 5.3 会再提）：</p>
+<ul>
+<li><strong>ICP（Iterative Closest Point，迭代最近点）</strong>：反���地"给当前帧每个点找地图里最近的点 → 求最小化总距离的刚体变换 → 应用变换 → 再找最近点"，直到收敛。直观但对初值敏感、最近点搜索开销大。</li>
+<li><strong>NDT（Normal Distributions Transform，正态分布变换）</strong>：把地图空间划成体素网格，每个体素用一个高斯分布描述其中点的分布，然后找一个位姿让当前帧的点落在这些高斯的高概率区域。<strong>NDT 对初值不那么敏感、速度快、精度高，是自动驾驶点云定位的主流</strong>，Apollo、Autoware 都用它。</li>
+</ul>
+<p>点云配准能给出厘米级、且<strong>完全不依赖 GNSS</strong> 的位姿——这是它在城市和地库封神的原因。代价是：需要预先建好高精点云地图（贵）、需要激光雷达（贵）、地图会因施工/季节变化而过时（需要维护）。它同样作为一路观测融进那个中心 EKF。</p>
+<blockquote>
+<p><strong>中高级视角</strong>：注意到没有——车道线、点云配准、GNSS、轮速，全都是<strong>往同一个 EKF 里塞观测</strong>。这是现代多源融合定位的核心架构：<strong>一个中心滤波器维护唯一的位姿状态，各种传感器/算法只负责产出"带协方差的观测"喂进去</strong>。这种"松耦合/紧耦合融合"的架构思想，比记住任何单个算法都重要。面试时你能画出"多源观测 → 统一 EKF → 唯一位姿输出 + 故障检测"这张图，档次立刻不一样。</p>
+</blockquote>
+<h3 id="初始对齐定位的冷启动难题"><a class="header" href="#初始对齐定位的冷启动难题">初始对齐：定位的"冷启动"难题</a></h3>
+<p>上面 <code>LocalizationStatus</code> 里有个 <code>Aligning</code> 状态，值得单独说——<strong>滤波器一上电，它并不知道自己在哪、朝哪</strong>。这个"冷启动"问题真实且棘手：</p>
+<ul>
+<li><strong>初始位置</strong>：靠第一个可用的 GNSS 定点给出，或人工/上次关机位置提供先验。</li>
+<li><strong>初始航向（yaw）</strong> 最麻烦：静止时 GNSS 给不出航向（没速度就没法从轨迹反推朝向），磁力计又常被车身金属和电磁干扰污染。常见做法是<strong>动态对齐</strong>——让车往前开一小段，用 GNSS 轨迹方向初始化 yaw；或用双天线 GNSS 直接测航向。</li>
+<li><strong>收敛判断</strong>：对齐期间 $P$ 很大、<code>status = Aligning</code>，<strong>此时定位结果不能给下游用</strong>，得等协方差收敛到阈值内才切 <code>Good</code>。</li>
+</ul>
+<p>这解释了很多量产车"上电后要等几秒、或缓行一小段才允许开启自动驾驶"的现象——它在等定位对齐收敛。别小看这几秒，冷启动没处理好，车会以一个错误的初始航向一路把估计带偏。</p>
+<h2 id="七工程现实多源切换与故障检测"><a class="header" href="#七工程现实多源切换与故障检测">七、工程现实：多源切换与故障检测</a></h2>
+<p>真实定位系统 80% 的复杂度，在于<strong>没有任何一个源永远可用，你得随时优雅切换</strong>。</p>
+<h3 id="可用性状态机"><a class="header" href="#可用性状态机">可用性状态机</a></h3>
+<p>不同场景下可信的源不一样，定位系统实质是个状态机：</p>
+<pre><code class="language-text">露天开阔  → GNSS/RTK(fix) + IMU + 轮速          → status: Good（厘米级）
+城市峡谷  → 车道线/点云 + IMU + 轮速，GNSS 降权   → status: Good/Degraded
+进隧道    → IMU + 轮速 + (若有)点云，GNSS 完全弃用 → status: Degraded（缓慢漂移）
+长期失效  → 漂移超阈值                            → status: Lost（触发下游降级/接管）
+</code></pre>
+<p>关键设计：<strong>不是非黑即白地"用/不用"某个源，而是动态调它的 $R$（权重）</strong>。RTK 失去 fix、只有浮点解时，把它的 $R$ 调大（更不信它）而非直接扔掉；车道线检测置信度低时同理。这种"按可信度连续加权"正是卡尔曼框架的自然表达——回到 5.1 那句话，<strong>一切都是按方差加权</strong>。</p>
+<h3 id="故障检测fault-detection"><a class="header" href="#故障检测fault-detection">故障检测（fault detection）</a></h3>
+<ul>
+<li><strong>新息门控</strong>：每一路观测更新前都做马氏距离检验（上面代码里那几行），挡住多路径野值、误检的车道线。这是第一道也是最重要的防线。</li>
+<li><strong>多源交叉校验</strong>：GNSS 说在 A、点云说在 B，两者差异超阈值 → 至少一个错了，触发告警并降到更保守的模式。</li>
+<li><strong>协方差监控</strong>：$P$ 的迹（trace）持续增大且不收敛 → 滤波器在发散，置 <code>Lost</code>。</li>
+<li><strong>诚实上报</strong>：把 <code>LocalizationStatus</code> 和协方差如实传给规划/控制。规划看到 <code>Degraded</code> 就该主动降速、加大安全距离；看到 <code>Lost</code> 就该请求接管或安全停车。<strong>定位系统最大的美德是知道自己什么时候不行了</strong>——一个自信满满地飘着的定位模块，是自动驾驶事故的经典成因。</li>
+</ul>
+<blockquote>
+<p><strong>真实项目里</strong>：定位工程师大量的时间不是在推公式，而是在<strong>跑数据、看 bag 回放里哪一帧开始飘、为什么飘</strong>。城市峡谷的多路径、过隧道口 GNSS 从有到无那一瞬间的跳变、上下匝道时的俯仰变化、雨雪天车道线检测失效……每一个都是 corner case。本书 <code>inf/</code> 那套 Rust 离线推理/评测 SDK 的价值就在这里——<strong>把海量路测数据离线跑一遍、自动评测定位精度在各场景下的分布</strong>，是定位算法迭代的命脉。会写融合算法只是入场券，能建起"数据驱动的评测闭环"才是资深定位工程师的护城河。</p>
+</blockquote>
+<h2 id="小结"><a class="header" href="#小结">小结</a></h2>
+<ul>
+<li>定位输出的是地图系下的 <strong>6-DoF 位姿 + 协方差 + 状态</strong>，其中"诚实上报自己行不行"和位姿本身一样重要。</li>
+<li><strong>GNSS/RTK</strong> 给绝对位置（RTK 可达厘米级），但低频、间歇，在城市峡谷（多路径）和隧道里失效；<strong>IMU</strong> 高频平滑、永远可用，但双重积分导致快速<strong>漂移</strong>——两者天生互补。</li>
+<li><strong>GNSS/IMU 组合导航</strong>用 EKF 融合二者，量产系统还把 <strong>IMU bias 放进状态在线估计</strong>；轮速里程计和<strong>零速修正</strong>在 GNSS 失效时托底。</li>
+<li><strong>地图匹配定位</strong>让环境说话：车道线观测修正横向/航向，<strong>NDT/ICP 点云配准</strong>给出不依赖 GNSS 的厘米级位姿——它们本质都是"往中心 EKF 塞带协方差的观测"。</li>
+<li>工程核心是<strong>多源动态加权切换 + 故障检测</strong>：新息门控挡野值、协方差监控判发散、状态如实上报驱动下游降级。</li>
+</ul>
+<p>下一节，我们把镜头拉远：如果连高精地图和点云地图都还没有，车怎么<strong>一边定位一边建图</strong>？这就是 SLAM。我们会讲清它和"离线建图 + 在线定位"的分野，以及量产为什么大多选了后者。</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../part5/kalman.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../part5/slam-hdmap.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../part5/kalman.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../part5/slam-hdmap.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

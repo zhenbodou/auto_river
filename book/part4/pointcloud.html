@@ -1,0 +1,652 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN" class="rust" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>4.4 点云处理与激光雷达感知 - Rust 智能驾驶开发：从小白到工程师</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="一本面向零基础读者、以 Rust 为主语言、系统讲解自动驾驶软件开发的实战教程。">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+        <!-- MathJax -->
+        <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "rust";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../preface.html">前言：这本书能带你到哪里</a></li><li class="chapter-item expanded affix "><a href="../how-to-use.html">如何使用本书</a></li><li class="chapter-item expanded affix "><li class="part-title">第一部分 · 认识智能驾驶</li><li class="chapter-item expanded "><a href="../part1/levels.html"><strong aria-hidden="true">1.</strong> 1.1 什么是自动驾驶：从 L0 到 L5</a></li><li class="chapter-item expanded "><a href="../part1/architecture.html"><strong aria-hidden="true">2.</strong> 1.2 一辆自动驾驶车的软件全景</a></li><li class="chapter-item expanded "><a href="../part1/pipeline.html"><strong aria-hidden="true">3.</strong> 1.3 感知—定位—预测—规划—控制 五大模块</a></li><li class="chapter-item expanded "><a href="../part1/why-rust.html"><strong aria-hidden="true">4.</strong> 1.4 为什么在智能驾驶里用 Rust</a></li><li class="chapter-item expanded "><a href="../part1/industry.html"><strong aria-hidden="true">5.</strong> 1.5 行业现状、岗位与技术栈地图</a></li><li class="chapter-item expanded affix "><li class="part-title">第二部分 · 面向智驾的 Rust 语言基础</li><li class="chapter-item expanded "><a href="../part2/setup.html"><strong aria-hidden="true">6.</strong> 2.1 搭建 Rust 开发环境</a></li><li class="chapter-item expanded "><a href="../part2/ownership.html"><strong aria-hidden="true">7.</strong> 2.2 所有权、借用与生命周期</a></li><li class="chapter-item expanded "><a href="../part2/traits.html"><strong aria-hidden="true">8.</strong> 2.3 类型系统、trait 与泛型</a></li><li class="chapter-item expanded "><a href="../part2/errors.html"><strong aria-hidden="true">9.</strong> 2.4 错误处理：Result、Option 与 anyhow</a></li><li class="chapter-item expanded "><a href="../part2/concurrency.html"><strong aria-hidden="true">10.</strong> 2.5 并发与异步：线程、channel、tokio</a></li><li class="chapter-item expanded "><a href="../part2/ecosystem.html"><strong aria-hidden="true">11.</strong> 2.6 智驾常用 crate 生态速览</a></li><li class="chapter-item expanded "><a href="../part2/performance-ffi.html"><strong aria-hidden="true">12.</strong> 2.7 性能工程、unsafe 与 C/C++ FFI</a></li><li class="chapter-item expanded affix "><li class="part-title">第三部分 · 传感器、坐标系与数据</li><li class="chapter-item expanded "><a href="../part3/sensors.html"><strong aria-hidden="true">13.</strong> 3.1 传感器全家福：相机、激光雷达、毫米波、IMU、GNSS</a></li><li class="chapter-item expanded "><a href="../part3/coordinates.html"><strong aria-hidden="true">14.</strong> 3.2 坐标系与刚体变换</a></li><li class="chapter-item expanded "><a href="../part3/time-sync.html"><strong aria-hidden="true">15.</strong> 3.3 时间戳、同步与数据流</a></li><li class="chapter-item expanded "><a href="../part3/data-model.html"><strong aria-hidden="true">16.</strong> 3.4 用 Rust 表达传感器数据</a></li><li class="chapter-item expanded "><a href="../part3/calibration.html"><strong aria-hidden="true">17.</strong> 3.5 传感器标定、运动补偿与在线健康监测</a></li><li class="chapter-item expanded affix "><li class="part-title">第四部分 · 感知</li><li class="chapter-item expanded "><a href="../part4/overview.html"><strong aria-hidden="true">18.</strong> 4.1 感知任务总览</a></li><li class="chapter-item expanded "><a href="../part4/image.html"><strong aria-hidden="true">19.</strong> 4.2 图像处理基础与 Rust 实现</a></li><li class="chapter-item expanded "><a href="../part4/inference.html"><strong aria-hidden="true">20.</strong> 4.3 深度学习推理：onnxruntime / tract / candle</a></li><li class="chapter-item expanded "><a href="../part4/pointcloud.html" class="active"><strong aria-hidden="true">21.</strong> 4.4 点云处理与激光雷达感知</a></li><li class="chapter-item expanded "><a href="../part4/tracking-fusion.html"><strong aria-hidden="true">22.</strong> 4.5 多目标跟踪与传感器融合</a></li><li class="chapter-item expanded "><a href="../part4/data-loop.html"><strong aria-hidden="true">23.</strong> 4.6 感知数据闭环与量产评测</a></li><li class="chapter-item expanded affix "><li class="part-title">第五部分 · 定位、建图与状态估计</li><li class="chapter-item expanded "><a href="../part5/kalman.html"><strong aria-hidden="true">24.</strong> 5.1 状态估计与卡尔曼滤波</a></li><li class="chapter-item expanded "><a href="../part5/localization.html"><strong aria-hidden="true">25.</strong> 5.2 定位：GNSS/IMU 组合导航与地图匹配</a></li><li class="chapter-item expanded "><a href="../part5/slam-hdmap.html"><strong aria-hidden="true">26.</strong> 5.3 SLAM 与高精地图概览</a></li><li class="chapter-item expanded affix "><li class="part-title">第六部分 · 预测与规划</li><li class="chapter-item expanded "><a href="../part6/prediction.html"><strong aria-hidden="true">27.</strong> 6.1 行为预测</a></li><li class="chapter-item expanded "><a href="../part6/planning.html"><strong aria-hidden="true">28.</strong> 6.2 路径与轨迹规划</a></li><li class="chapter-item expanded "><a href="../part6/decision.html"><strong aria-hidden="true">29.</strong> 6.3 决策与行为规划</a></li><li class="chapter-item expanded affix "><li class="part-title">第七部分 · 控制</li><li class="chapter-item expanded "><a href="../part7/vehicle-model.html"><strong aria-hidden="true">30.</strong> 7.1 车辆运动学与动力学模型</a></li><li class="chapter-item expanded "><a href="../part7/control.html"><strong aria-hidden="true">31.</strong> 7.2 横向与纵向控制：PID 到 MPC</a></li><li class="chapter-item expanded affix "><li class="part-title">第八部分 · 中间件与系统集成</li><li class="chapter-item expanded "><a href="../part8/middleware.html"><strong aria-hidden="true">32.</strong> 8.1 自动驾驶中间件全景</a></li><li class="chapter-item expanded "><a href="../part8/ros2-rclrs.html"><strong aria-hidden="true">33.</strong> 8.2 ROS 2 与 rclrs：用 Rust 写节点</a></li><li class="chapter-item expanded "><a href="../part8/zenoh-dds.html"><strong aria-hidden="true">34.</strong> 8.3 Zenoh、DDS 与零拷贝通信</a></li><li class="chapter-item expanded "><a href="../part8/messages.html"><strong aria-hidden="true">35.</strong> 8.4 消息定义与序列化</a></li><li class="chapter-item expanded "><a href="../part8/runtime-engineering.html"><strong aria-hidden="true">36.</strong> 8.5 运行时工程：背压、可观测性与资源预算</a></li><li class="chapter-item expanded affix "><li class="part-title">第九部分 · 仿真、测试与安全</li><li class="chapter-item expanded "><a href="../part9/simulation.html"><strong aria-hidden="true">37.</strong> 9.1 仿真：CARLA 与数据回放</a></li><li class="chapter-item expanded "><a href="../part9/testing.html"><strong aria-hidden="true">38.</strong> 9.2 测试策略：单元、集成与录制回放</a></li><li class="chapter-item expanded "><a href="../part9/safety.html"><strong aria-hidden="true">39.</strong> 9.3 功能安全、实时性与部署</a></li><li class="chapter-item expanded "><a href="../part9/cybersecurity.html"><strong aria-hidden="true">40.</strong> 9.4 汽车网络安全、供应链与安全 OTA</a></li><li class="chapter-item expanded "><a href="../part9/safety-case.html"><strong aria-hidden="true">41.</strong> 9.5 系统工程、安全论证与故障注入</a></li><li class="chapter-item expanded affix "><li class="part-title">第十部分 · 实战与职业</li><li class="chapter-item expanded "><a href="../part10/project.html"><strong aria-hidden="true">42.</strong> 10.1 实战项目：搭一个最小自动驾驶栈</a></li><li class="chapter-item expanded "><a href="../part10/career.html"><strong aria-hidden="true">43.</strong> 10.2 学习路线图与求职准备</a></li><li class="chapter-item expanded "><a href="../part10/glossary.html"><strong aria-hidden="true">44.</strong> 10.3 常见术语表</a></li><li class="chapter-item expanded "><a href="../part10/competency.html"><strong aria-hidden="true">45.</strong> 10.4 逐章能力验收与作品集证据</a></li><li class="chapter-item expanded "><a href="../part10/capstone.html"><strong aria-hidden="true">46.</strong> 10.5 中高级毕业项目：从最小栈到可评审系统</a></li><li class="chapter-item expanded affix "><li class="spacer"></li><li class="chapter-item expanded affix "><a href="../afterword.html">后记与延伸资源</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Rust 智能驾驶开发：从小白到工程师</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="44-点云处理与激光雷达感知"><a class="header" href="#44-点云处理与激光雷达感知">4.4 点云处理与激光雷达感知</a></h1>
+<p>上一章我们在图像的 2D 世界里跑完了检测。现在切换到激光雷达（LiDAR）的 3D 世界。相机给的是稠密、有颜色但没深度的像素；激光雷达给的是稀疏、无颜色但<strong>每个点都带精确 3D 坐标</strong>的点云（point cloud）。1.3 节说过，一圈激光雷达点云约 12 万个点，每个点 <code>(x, y, z, intensity)</code>。这一章我们就来处理这十几万个点：怎么高效遍历、怎么下采样、怎么把地面剥掉、怎么把剩下的点聚成一个个障碍物，最后简单说说 3D 检测网络和 BEV。</p>
+<p>这是重点章，也是<strong>算法密度最高</strong>的一章。点云处理是很多传统几何算法的主场，即便深度学习盛行的今天，RANSAC 地面分割、欧式聚类这些经典算法仍然活跃在量产系统里——因为它们<strong>不需要训练、可解释、兜得住长尾</strong>。你手写一遍，对激光雷达感知的理解会上一个台阶。</p>
+<h2 id="点云的数据结构与遍历性能"><a class="header" href="#点云的数据结构与遍历性能">点云的数据结构与遍历性能</a></h2>
+<p>一个点最朴素的表示：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, Copy)]
+pub struct Point {
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
+    pub intensity: f32, // 反射强度，0~1 或 0~255，材质相关
+}
+
+pub type PointCloud = Vec&lt;Point&gt;;
+<span class="boring">}</span></code></pre></pre>
+<p>看起来平平无奇，但这里有个<strong>决定性能的关键抉择</strong>：用 <strong>AoS（Array of Structs，结构体数组）</strong> 还是 <strong>SoA（Struct of Arrays，数组的结构体）</strong>？</p>
+<ul>
+<li><strong>AoS</strong>：<code>Vec&lt;Point&gt;</code>，就是上面这样。每个点的 xyz+intensity 挨在一起。<strong>遍历单个点很方便</strong>，缓存友好（处理一个点时它的四个字段都在一条缓存线上）。</li>
+<li><strong>SoA</strong>：<code>struct Cloud { xs: Vec&lt;f32&gt;, ys: Vec&lt;f32&gt;, zs: Vec&lt;f32&gt;, is: Vec&lt;f32&gt; }</code>。所有点的 x 挨在一起。<strong>批量只算某一维时极快</strong>（比如"只算所有点的平均 z"能连续扫一整个 <code>Vec&lt;f32&gt;</code>，SIMD 友好）。</li>
+</ul>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// SoA 布局：某些批量运算（尤其能 SIMD 的）会明显更快
+pub struct CloudSoA {
+    pub xs: Vec&lt;f32&gt;,
+    pub ys: Vec&lt;f32&gt;,
+    pub zs: Vec&lt;f32&gt;,
+    pub is: Vec&lt;f32&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<blockquote>
+<p><strong>中高级视角</strong>：AoS vs SoA 是点云工程的第一个性能分水岭。十几万点、每帧 10 Hz，任何 <code>O(n)</code> 的操作都要认真对待内存布局。经验法则：<strong>逻辑上"一个点一个点处理"用 AoS，数值上"整列一起算"用 SoA</strong>。PCL（C++ 点云库）内部大量用 SoA + SIMD。本章为了代码清晰用 AoS，但你要知道生产里这块会为了性能变形。另一个大坑是：<strong>永远不要在热循环里 clone 整个点云</strong>——十几万个点的拷贝，每帧来一次就是几毫秒没了。用引用、切片、原地修改。</p>
+</blockquote>
+<p>遍历时优先用迭代器，既地道又常常让编译器帮你优化：</p>
+<pre><code class="language-rust ignore">/// 算点云的轴对齐包围盒（AABB），一次遍历。
+fn bounding_box(cloud: &amp;[Point]) -&gt; ([f32; 3], [f32; 3]) {
+    let mut min = [f32::INFINITY; 3];
+    let mut max = [f32::NEG_INFINITY; 3];
+    for p in cloud {
+        min[0] = min[0].min(p.x); max[0] = max[0].max(p.x);
+        min[1] = min[1].min(p.y); max[1] = max[1].max(p.y);
+        min[2] = min[2].min(p.z); max[2] = max[2].max(p.z);
+    }
+    (min, max)
+}</code></pre>
+<h2 id="体素栅格下采样voxel-grid"><a class="header" href="#体素栅格下采样voxel-grid">体素栅格下采样（voxel grid）</a></h2>
+<p>十几万个点，很多是冗余的——近处地面密密麻麻挤着几千个点，其实用不着这么多。**体素栅格下采样（voxel grid downsampling）**把 3D 空间切成一个个小立方体（<strong>体素 voxel</strong>，比如边长 0.2 米），<strong>每个体素里的所有点用它们的质心（重心）代替一个点</strong>。这样点数能砍到十分之一甚至更少，后续算法快得多，且几乎不损失结构信息。</p>
+<p><strong>算法</strong>：</p>
+<ol>
+<li>选体素边长 <code>leaf_size</code>。</li>
+<li>对每个点，算它落在哪个体素：<code>voxel = (floor(x/leaf), floor(y/leaf), floor(z/leaf))</code>，这个三元组当 key。</li>
+<li>用哈希表把点按体素分组，累加每个体素里点的坐标和计数。</li>
+<li>每个体素输出一个点：质心 = 坐标和 / 计数。</li>
+</ol>
+<p>Rust 实现：</p>
+<pre><code class="language-rust ignore">use std::collections::HashMap;
+
+/// 体素栅格下采样。leaf_size 是体素边长（米）。
+pub fn voxel_downsample(cloud: &amp;[Point], leaf_size: f32) -&gt; Vec&lt;Point&gt; {
+    assert!(leaf_size &gt; 0.0);
+    let inv = 1.0 / leaf_size;
+
+    // key: 体素整数坐标；value: (x和, y和, z和, i和, 计数)
+    let mut voxels: HashMap&lt;(i64, i64, i64), (f64, f64, f64, f64, u32)&gt; = HashMap::new();
+
+    for p in cloud {
+        let key = (
+            (p.x * inv).floor() as i64,
+            (p.y * inv).floor() as i64,
+            (p.z * inv).floor() as i64,
+        );
+        let e = voxels.entry(key).or_insert((0.0, 0.0, 0.0, 0.0, 0));
+        e.0 += p.x as f64;
+        e.1 += p.y as f64;
+        e.2 += p.z as f64;
+        e.3 += p.intensity as f64;
+        e.4 += 1;
+    }
+
+    voxels
+        .into_values()
+        .map(|(sx, sy, sz, si, n)| {
+            let n = n as f64;
+            Point {
+                x: (sx / n) as f32,
+                y: (sy / n) as f32,
+                z: (sz / n) as f32,
+                intensity: (si / n) as f32,
+            }
+        })
+        .collect()
+}</code></pre>
+<p>工程细节：</p>
+<ul>
+<li><strong><code>leaf_size</code> 是精度/速度的旋钮</strong>。太大（比如 0.5 米）会把小物体（远处行人）抹平甚至整个吞掉——下游就漏检了。太小则降采样效果不明显。城市场景常用 0.1~0.2 米。</li>
+<li><strong>可以用体素中心代替质心</strong>（<code>key * leaf + leaf/2</code>），更快（不用累加坐标），但点会有栅格化的"网格感"。质心更平滑、更贴合真实表面，多数场景更好。</li>
+<li><strong>哈希是瓶颈</strong>：十几万次哈希插入。生产里会换更快的哈希（<code>ahash</code>/<code>fxhash</code>）或直接把体素坐标编码成一个整数 key。别用默认的 <code>SipHash</code>（抗碰撞但慢）。</li>
+</ul>
+<h2 id="地面分割ransac-平面拟合"><a class="header" href="#地面分割ransac-平面拟合">地面分割：RANSAC 平面拟合</a></h2>
+<p>点云里绝大部分点是<strong>地面</strong>。地面点对"找障碍物"毫无用处，反而碍事——聚类时地面会把所有物体连成一坨。所以经典流水线的第一步几乎都是<strong>地面分割（ground segmentation）</strong>：把地面点剥离出去，只留下"地面之上"的点做后续聚类。</p>
+<p>最经典的方法是 <strong>RANSAC（Random Sample Consensus，随机采样一致性）拟合平面</strong>。核心思想极其优雅：<strong>地面近似是一个平面，我随机猜一个平面，看有多少点贴着它；猜很多次，贴合点最多的那个平面就是地面。</strong></p>
+<h3 id="数学平面与点到平面距离"><a class="header" href="#数学平面与点到平面距离">数学：平面与点到平面距离</a></h3>
+<p>一个平面用方程表示：</p>
+<p>$$
+ax + by + cz + d = 0
+$$</p>
+<p>其中 <code>(a, b, c)</code> 是平面的<strong>法向量（normal）</strong>（垂直于平面的方向），通常归一化到 <code>a²+b²+c²=1</code>。对地面，法向量应该接近竖直方向 <code>(0,0,1)</code>。</p>
+<p>任意一点 <code>(x0, y0, z0)</code> 到这个平面的<strong>垂直距离</strong>是：</p>
+<p>$$
+\text{dist} = \frac{|a x_0 + b y_0 + c z_0 + d|}{\sqrt{a^2+b^2+c^2}}
+$$</p>
+<p>若法向量已归一化，分母是 1，距离就是分子的绝对值。这个距离就是判断"点贴不贴平面"的尺子。</p>
+<h3 id="怎么从-3-个点定一个平面"><a class="header" href="#怎么从-3-个点定一个平面">怎么从 3 个点定一个平面</a></h3>
+<p>RANSAC 每次随机取 3 个点（3 点定一平面）。给定三点 <code>P1, P2, P3</code>，法向量是两条边向量的<strong>叉积（cross product）</strong>：</p>
+<p>$$
+\vec{n} = (P_2 - P_1) \times (P_3 - P_1)
+$$</p>
+<p>叉积得到的向量同时垂直于两条边，也就垂直于平面。归一化后就是 <code>(a,b,c)</code>，再用 <code>d = -(a x_1 + b y_1 + c z_1)</code> 定出 <code>d</code>。</p>
+<h3 id="ransac-算法"><a class="header" href="#ransac-算法">RANSAC 算法</a></h3>
+<ol>
+<li>迭代 K 次：
+<ul>
+<li>随机取 3 个点，算出候选平面 <code>(a,b,c,d)</code>。</li>
+<li>数有多少点到该平面距离 &lt; 阈值 <code>dist_thresh</code>（这些叫<strong>内点 inliers</strong>）。</li>
+<li>记住内点最多的那个平面。</li>
+</ul>
+</li>
+<li>用内点最多的平面，把所有内点判为地面，其余为非地面。</li>
+</ol>
+<p><strong>为什么迭代 K 次就够？</strong> 概率论。设内点比例是 <code>w</code>，随机取 3 个点全是内点的概率是 <code>w³</code>。取 K 次至少有一次全命中的概率是 <code>1 - (1-w³)^K</code>。地面点通常占一大半（<code>w≈0.6</code>），K 取 50~100 就有极高概率抽中一次"干净"的地面三点样本。这就是 RANSAC 便宜又鲁棒的原因——它对离群点（outliers，比如障碍物点）天然免疫。</p>
+<p>Rust 实现：</p>
+<pre><code class="language-rust ignore">use rand::seq::SliceRandom;
+
+#[derive(Debug, Clone, Copy)]
+pub struct Plane {
+    pub a: f32,
+    pub b: f32,
+    pub c: f32,
+    pub d: f32,
+}
+
+impl Plane {
+    /// 点到平面的距离（假设法向量已归一化）。
+    fn dist(&amp;self, p: &amp;Point) -&gt; f32 {
+        (self.a * p.x + self.b * p.y + self.c * p.z + self.d).abs()
+    }
+}
+
+/// 由三点确定一个平面（叉积求法向量）。三点共线则返回 None。
+fn plane_from_3(p1: &amp;Point, p2: &amp;Point, p3: &amp;Point) -&gt; Option&lt;Plane&gt; {
+    let v1 = [p2.x - p1.x, p2.y - p1.y, p2.z - p1.z];
+    let v2 = [p3.x - p1.x, p3.y - p1.y, p3.z - p1.z];
+    // 叉积 v1 × v2
+    let n = [
+        v1[1] * v2[2] - v1[2] * v2[1],
+        v1[2] * v2[0] - v1[0] * v2[2],
+        v1[0] * v2[1] - v1[1] * v2[0],
+    ];
+    let norm = (n[0] * n[0] + n[1] * n[1] + n[2] * n[2]).sqrt();
+    if norm &lt; 1e-6 {
+        return None; // 三点共线，构不成平面
+    }
+    let (a, b, c) = (n[0] / norm, n[1] / norm, n[2] / norm);
+    let d = -(a * p1.x + b * p1.y + c * p1.z);
+    Some(Plane { a, b, c, d })
+}
+
+/// RANSAC 地面分割。返回 (地面点索引集合是内点掩码, 拟合出的平面)。
+pub fn ransac_ground(
+    cloud: &amp;[Point],
+    iters: usize,
+    dist_thresh: f32,
+) -&gt; (Vec&lt;bool&gt;, Option&lt;Plane&gt;) {
+    let mut rng = rand::thread_rng();
+    let idxs: Vec&lt;usize&gt; = (0..cloud.len()).collect();
+    let mut best_inliers = 0usize;
+    let mut best_plane: Option&lt;Plane&gt; = None;
+
+    for _ in 0..iters {
+        // 随机取 3 个不同的点
+        let sample: Vec&lt;usize&gt; = idxs.choose_multiple(&amp;mut rng, 3).copied().collect();
+        let plane = match plane_from_3(&amp;cloud[sample[0]], &amp;cloud[sample[1]], &amp;cloud[sample[2]]) {
+            Some(p) =&gt; p,
+            None =&gt; continue,
+        };
+        // 可选：只接受近似水平的平面（法向量接近竖直），排除墙面等竖直平面
+        if plane.c.abs() &lt; 0.85 {
+            continue;
+        }
+        // 数内点
+        let count = cloud.iter().filter(|p| plane.dist(p) &lt; dist_thresh).count();
+        if count &gt; best_inliers {
+            best_inliers = count;
+            best_plane = Some(plane);
+        }
+    }
+
+    // 用最优平面标记地面点
+    let mask = match &amp;best_plane {
+        Some(pl) =&gt; cloud.iter().map(|p| pl.dist(p) &lt; dist_thresh).collect(),
+        None =&gt; vec![false; cloud.len()],
+    };
+    (mask, best_plane)
+}</code></pre>
+<p>工程现实：</p>
+<ul>
+<li><strong><code>plane.c.abs() &lt; 0.85</code> 那行很重要</strong>：它拒绝掉墙、大卡车侧面这类竖直大平面被误当成"地面"。地面的法向量该接近 <code>(0,0,±1)</code>，即 <code>|c|≈1</code>。少了这道约束，RANSAC 可能拟合出一面墙。</li>
+<li><strong><code>dist_thresh</code> 典型 0.1~0.3 米</strong>：太小地面剥不干净（残留地面点会干扰聚类），太大会把贴地的矮障碍物（路沿、减速带）当地面吃掉。</li>
+<li><strong>单平面假设会失效</strong>：上下坡、起伏路面不是一个平面。生产里常把点云按距离切成多个扇区/环，<strong>分段拟合多个局部平面</strong>，或用更复杂的方法（如基于射线的、或专门的地面网络）。RANSAC 单平面是够用且好用的基线。</li>
+<li><strong>实时性</strong>：<code>iters=100</code>、每次 O(n) 数内点，是 <code>100n</code>。十几万点跑得动，但如果先 voxel 下采样再 RANSAC，会快很多且精度几乎不掉——<strong>这就是为什么下采样几乎总在地面分割之前</strong>。</li>
+</ul>
+<blockquote>
+<p><strong>面试题</strong>：RANSAC 为什么对离群点鲁棒，而最小二乘拟合不行？
+<strong>答</strong>：最小二乘让"所有点的误差平方和最小"，一个远处的离群点（比如一根伸到天上的电线杆点）会因为误差被平方而<strong>极大地拉偏</strong>整个拟合结果。RANSAC 不看所有点，它找"支持者最多"的模型——离群点天生进不了内点集，对结果零影响。代价是它是随机的、要迭代、不保证每次结果完全一致。鲁棒性 vs 确定性，这是经典权衡。</p>
+</blockquote>
+<h2 id="欧式聚类把点聚成物体kd-tree-加速"><a class="header" href="#欧式聚类把点聚成物体kd-tree-加速">欧式聚类：把点聚成物体（kd-tree 加速）</a></h2>
+<p>剥掉地面后，剩下的点是一堆悬在空中的"障碍物点"。但点云不知道"哪些点属于同一辆车"。**欧式聚类（Euclidean clustering）**解决这个：<strong>空间上挨得足够近（距离 &lt; 阈值）的点，归为同一个物体。</strong></p>
+<p>朴素想法是对每个点找它半径 <code>r</code> 内的所有邻居，做区域生长（region growing）。但"找半径内邻居"如果暴力两两比较是 O(n²)，十几万点直接爆炸。<strong>必须用空间索引加速</strong>——这就是 <strong>kd-tree</strong> 登场的地方。</p>
+<h3 id="kd-tree-是什么"><a class="header" href="#kd-tree-是什么">kd-tree 是什么</a></h3>
+<p>kd-tree（k-dimensional tree）是一种把 k 维空间递归二分的树。它让"找某点附近的邻居"从 O(n) 降到平均 O(log n)。对点云的半径搜索、最近邻搜索，它是标配。Rust 生态里有现成的：</p>
+<pre><code class="language-toml"># Cargo.toml
+[dependencies]
+kiddo = "4"      # 高性能 kd-tree，支持半径/最近邻查询
+# 或 kdtree = "0.7"，API 更朴素
+rand = "0.8"
+</code></pre>
+<p><code>kiddo</code> 是目前 Rust 里性能很好的 kd-tree 实现，专为大规模最近邻/半径查询优化。下面用它做欧式聚类。</p>
+<h3 id="算法基于-kd-tree-的区域生长"><a class="header" href="#算法基于-kd-tree-的区域生长">算法：基于 kd-tree 的区域生长</a></h3>
+<ol>
+<li>把所有非地面点建进 kd-tree。</li>
+<li>维护一个"已访问"标记。对每个还没访问的点，开一个新簇（cluster），做广度优先扩张：
+<ul>
+<li>把它入队、标记已访问。</li>
+<li>队列里取一个点，用 kd-tree 查它半径 <code>tol</code> 内的所有邻居，把没访问过的邻居加进当前簇、入队、标记。</li>
+<li>队列空了，一个簇就长完了。</li>
+</ul>
+</li>
+<li>簇大小在 <code>[min_pts, max_pts]</code> 之间的才保留（太小是噪声，太大可能是没剥干净的地面或墙）。</li>
+</ol>
+<pre><code class="language-rust ignore">use kiddo::{KdTree, SquaredEuclidean};
+use std::collections::VecDeque;
+
+/// 欧式聚类。tol 是邻域半径（米），返回若干簇，每个簇是点索引列表。
+pub fn euclidean_cluster(
+    cloud: &amp;[Point],
+    tol: f32,
+    min_pts: usize,
+    max_pts: usize,
+) -&gt; Vec&lt;Vec&lt;usize&gt;&gt; {
+    // 1) 建 kd-tree。kiddo 用 [f32; 3] 作为坐标，usize 作为负载(点索引)
+    let mut tree: KdTree&lt;f32, 3&gt; = KdTree::new();
+    for (i, p) in cloud.iter().enumerate() {
+        tree.add(&amp;[p.x, p.y, p.z], i as u64);
+    }
+
+    let tol_sq = tol * tol; // kiddo 的 SquaredEuclidean 返回平方距离
+    let mut visited = vec![false; cloud.len()];
+    let mut clusters: Vec&lt;Vec&lt;usize&gt;&gt; = Vec::new();
+
+    for seed in 0..cloud.len() {
+        if visited[seed] {
+            continue;
+        }
+        // 2) 从 seed 开始区域生长（BFS）
+        let mut cluster = Vec::new();
+        let mut queue = VecDeque::new();
+        queue.push_back(seed);
+        visited[seed] = true;
+
+        while let Some(cur) = queue.pop_front() {
+            cluster.push(cur);
+            let p = &amp;cloud[cur];
+            // 半径搜索：返回 tol 内所有点
+            let neighbors = tree.within::&lt;SquaredEuclidean&gt;(&amp;[p.x, p.y, p.z], tol_sq);
+            for nb in neighbors {
+                let idx = nb.item as usize;
+                if !visited[idx] {
+                    visited[idx] = true;
+                    queue.push_back(idx);
+                }
+            }
+        }
+
+        // 3) 按大小过滤
+        if cluster.len() &gt;= min_pts &amp;&amp; cluster.len() &lt;= max_pts {
+            clusters.push(cluster);
+        }
+    }
+    clusters
+}</code></pre>
+<blockquote>
+<p>注：<code>kiddo</code> 具体 API（<code>within</code> 的签名、距离度量类型）随版本略有变化，以你锁定版本的文档为准；这里展示的是"建树 → 逐点半径查询 → 区域生长"的骨架逻辑，思路是通用的。</p>
+</blockquote>
+<p>每个簇就是一个候选障碍物。算一下它的 AABB（用前面的 <code>bounding_box</code>），就得到了一个粗糙的 3D 框——位置、大小都有了：</p>
+<pre><code class="language-rust ignore">/// 把一个簇变成一个粗糙的 3D 障碍物框
+fn cluster_to_obstacle(cloud: &amp;[Point], cluster: &amp;[usize]) -&gt; Obstacle {
+    let pts: Vec&lt;Point&gt; = cluster.iter().map(|&amp;i| cloud[i]).collect();
+    let (min, max) = bounding_box(&amp;pts);
+    let center = [
+        ((min[0] + max[0]) / 2.0) as f64,
+        ((min[1] + max[1]) / 2.0) as f64,
+        ((min[2] + max[2]) / 2.0) as f64,
+    ];
+    let size = [
+        (max[0] - min[0]) as f64,
+        (max[1] - min[1]) as f64,
+        (max[2] - min[2]) as f64,
+    ];
+    Obstacle {
+        id: 0,             // 待跟踪赋值（4.5）
+        class: ObstacleClass::Unknown, // 几何聚类不知道类别！
+        position: center,
+        velocity: [0.0; 3], // 待跟踪估计
+        size,
+        heading: 0.0,
+        confidence: 0.8,
+    }
+}</code></pre>
+<p>工程现实，句句血泪：</p>
+<ul>
+<li><strong><code>class</code> 是 <code>Unknown</code></strong>：纯几何聚类<strong>不知道这堆点是车是人还是垃圾桶</strong>。要类别，要么靠点云分类网络，要么靠和相机检测融合（4.5）。这是几何方法的根本局限。</li>
+<li><strong><code>tol</code> 的两难</strong>：太小，一辆车会被切成好几块（欠聚类）；太大，两个挨近的行人会被粘成一坨（过聚类）。经典失败场景：<strong>两个人并肩走</strong>被聚成一个"大障碍物"，或者<strong>一辆公交车</strong>因为点稀被切成三段。</li>
+<li><strong>距离自适应</strong>：激光雷达点云<strong>近密远疏</strong>。固定 <code>tol</code> 对远处物体（点稀）会欠聚类。成熟系统用<strong>随距离增大的 <code>tol</code></strong>，或先做距离归一化。</li>
+<li><strong>建树成本</strong>：每帧重建 kd-tree 也要时间。十几万点建树 + 查询，配合前面的 voxel 下采样（先把点砍到几万）才能实时。</li>
+</ul>
+<blockquote>
+<p><strong>中高级视角</strong>：voxel 下采样 → RANSAC 地面分割 → 欧式聚类，这条"传统三件套"是激光雷达感知的<strong>经典基线</strong>，直到今天很多量产系统仍保留它，作为深度学习检测的<strong>兜底和补充</strong>。为什么？因为它<strong>不需要训练、对没见过的物体（长尾）天然有效</strong>——一个从卡车上掉下来的奇形怪状的沙发，检测网络没见过可能漏检，但它是"地面之上的一坨点"，聚类照样能把它框出来。深度学习管"认识常见物体"，几何聚类管"别撞上任何一坨东西"，两者互补。这就是 4.1 节说的 freespace/几何方法作为"长尾安全网"的价值。</p>
+</blockquote>
+<h2 id="3d-检测网络pointpillars-与-centerpoint"><a class="header" href="#3d-检测网络pointpillars-与-centerpoint">3D 检测网络：PointPillars 与 CenterPoint</a></h2>
+<p>传统聚类给不了类别、朝向也粗糙。现代激光雷达感知的主力是<strong>3D 检测网络</strong>——直接从点云端到端输出带类别、朝向、尺寸的 3D 框。你要知道两个代表：</p>
+<ul>
+<li><strong>PointPillars</strong>：把点云在俯视方向切成一根根竖直的"柱子（pillar）"，每根柱子里的点用小网络编码成一个特征向量，于是整个点云变成一张<strong>伪图像</strong>（BEV 特征图），然后就能套用成熟的 2D 卷积检测头。<strong>优点是快</strong>——把 3D 问题降维成 2D，实时性好，是很多量产系统的选择。</li>
+<li><strong>CenterPoint</strong>：不预测框的角点，而是<strong>预测物体中心点的热力图</strong>（哪里是一个物体的中心），再从中心回归尺寸、朝向、速度。基于中心点的表示对朝向和尺度更友好，精度更高，是近年的强基线。</li>
+</ul>
+<p>它们的共同点：<strong>都要先把稀疏无序的点云，变成某种规整的表示（pillar/voxel 特征、BEV 图）</strong>，才能上卷积。这引出下一个关键概念——BEV。</p>
+<h2 id="点云到-bev鸟瞰图"><a class="header" href="#点云到-bev鸟瞰图">点云到 BEV：鸟瞰图</a></h2>
+<p>**BEV（Bird's Eye View，鸟瞰图）**是激光雷达乃至整个现代感知的核心表示。思路是：<strong>从正上方俯视，把 3D 空间压成一张 2D 俯视栅格图</strong>。每个栅格格子（比如 0.2m × 0.2m）里统计落进来的点的特征（最高点、点数、平均强度等）。</p>
+<p>为什么 BEV 这么重要：</p>
+<ol>
+<li><strong>尺度不变</strong>：在 BEV 里，一辆车不管远近，占的格子数差不多（因为是物理尺寸），不像图像里近大远小。这对检测极友好。</li>
+<li><strong>没有遮挡叠加</strong>：俯视图里物体不会像相机图那样前后重叠。</li>
+<li><strong>天然是规划要的坐标系</strong>：规划就在这个俯视的自车/地图平面里干活，BEV 直接对齐。</li>
+<li><strong>易于多传感器融合</strong>：相机特征、激光特征都能投到同一张 BEV 上对齐——这是"BEV 融合"成为当前主流的原因，也是特斯拉"占用网络"、以及大量最新研究的落脚点。</li>
+</ol>
+<p>一个最简单的"点云 → BEV 高度图"实现，帮你建立直觉：</p>
+<pre><code class="language-rust ignore">/// 把点云投成一张 BEV 高度图。范围 [x_min,x_max]×[y_min,y_max]，分辨率 res 米/格。
+/// 每格记录落入点的最大高度 z（简单起见）。返回 (H, W) 的二维数组。
+pub fn cloud_to_bev(
+    cloud: &amp;[Point],
+    x_range: (f32, f32),
+    y_range: (f32, f32),
+    res: f32,
+) -&gt; ndarray::Array2&lt;f32&gt; {
+    use ndarray::Array2;
+    let w = ((x_range.1 - x_range.0) / res).ceil() as usize;
+    let h = ((y_range.1 - y_range.0) / res).ceil() as usize;
+    let mut bev = Array2::&lt;f32&gt;::from_elem((h, w), f32::NEG_INFINITY);
+
+    for p in cloud {
+        if p.x &lt; x_range.0 || p.x &gt;= x_range.1 || p.y &lt; y_range.0 || p.y &gt;= y_range.1 {
+            continue;
+        }
+        let col = ((p.x - x_range.0) / res) as usize;
+        let row = ((p.y - y_range.0) / res) as usize;
+        if p.z &gt; bev[[row, col]] {
+            bev[[row, col]] = p.z; // 取最高点作为该格高度
+        }
+    }
+    // 把没有点的格子的 -inf 归零
+    bev.mapv_inplace(|v| if v.is_finite() { v } else { 0.0 });
+    bev
+}</code></pre>
+<p>真实的 BEV 编码远比这复杂（多通道：高度分层、密度、强度；或用网络学的 pillar 特征），但内核就是这个"3D 点 → 俯视 2D 栅格"的投影。<strong>理解了这张图，你就理解了现代感知的通用语言。</strong> 从 4.2 的图像张量，到这里的 BEV 张量，再到 4.3 的推理引擎——它们最终都汇成"把某种规整张量喂给网络"。</p>
+<h2 id="一条完整的传统激光雷达感知流水线"><a class="header" href="#一条完整的传统激光雷达感知流水线">一条完整的传统激光雷达感知流水线</a></h2>
+<p>把本章的算法串起来，就是一条能跑的激光雷达感知基线：</p>
+<pre><code class="language-rust ignore">fn lidar_perception(raw: &amp;[Point]) -&gt; Vec&lt;Obstacle&gt; {
+    // 1) 下采样：十几万点 → 几万点，后续都快
+    let ds = voxel_downsample(raw, 0.15);
+
+    // 2) 地面分割：剥掉地面点
+    let (ground_mask, _plane) = ransac_ground(&amp;ds, 100, 0.2);
+    let non_ground: Vec&lt;Point&gt; = ds.iter().zip(&amp;ground_mask)
+        .filter(|(_, &amp;is_ground)| !is_ground)
+        .map(|(p, _)| *p)
+        .collect();
+
+    // 3) 聚类：非地面点聚成物体
+    let clusters = euclidean_cluster(&amp;non_ground, 0.5, 15, 20_000);
+
+    // 4) 每个簇 → 一个粗糙 Obstacle（类别 Unknown，待融合/跟踪细化）
+    clusters.iter()
+        .map(|c| cluster_to_obstacle(&amp;non_ground, c))
+        .collect()
+}</code></pre>
+<p>这条流水线产出的 <code>Obstacle</code> 有位置、大小，但<strong>没有类别、没有 ID、没有速度</strong>。类别靠和相机检测融合补，ID 和速度靠跟踪补——这正是下一章 4.5 要干的全部事情。至此，感知的"看到"部分（图像检测、点云聚类/检测）我们都覆盖了，接下来是把这些逐帧、多源的观测，缝合成一个稳定、带 ID、带速度、带不确定性的世界模型。</p>
+<h2 id="小结"><a class="header" href="#小结">小结</a></h2>
+<ul>
+<li>点云是十几万个 <code>(x,y,z,intensity)</code> 点；<strong>AoS/SoA 内存布局</strong>和"绝不在热循环里 clone"是性能第一课。</li>
+<li><strong>体素下采样</strong>用体素质心代替一堆点，把点数砍一个数量级，几乎总放在流水线最前面；<code>leaf_size</code> 是精度/速度旋钮。</li>
+<li><strong>RANSAC 地面分割</strong>：随机猜平面、数内点、留最优；对离群点鲁棒（不像最小二乘会被拉偏）；用叉积从 3 点定平面、点到平面距离当尺子；加"法向量近竖直"约束防止拟合到墙。</li>
+<li><strong>欧式聚类</strong>用 <strong>kd-tree（kiddo）<strong>把半径搜索降到 O(log n)，区域生长把近邻点聚成物体；<code>tol</code> 太小欠聚类、太大过聚类，要距离自适应。几何聚类</strong>给不了类别</strong>，但<strong>对长尾物体天然有效</strong>，是深度学习的兜底。</li>
+<li><strong>3D 检测网络</strong>（PointPillars 快、CenterPoint 准）和 <strong>BEV 鸟瞰图</strong>是现代激光雷达感知的主力；BEV 尺度不变、无遮挡叠加、对齐规划坐标系、易做多传感器融合，是当前感知的通用语言。</li>
+<li>传统三件套流水线产出的 <code>Obstacle</code> <strong>缺类别、ID、速度</strong>——下一章补齐。</li>
+</ul>
+<p>下一章 4.5，我们把逐帧、多源的检测结果，用跟踪和融合缝成一个稳定的世界模型：匈牙利算法做数据关联、卡尔曼滤波估速度、前融合 vs 后融合、以及怎么把 1.3 节承诺的"带不确定性的感知输出"真正用协方差落地。</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../part4/inference.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../part4/tracking-fusion.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../part4/inference.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../part4/tracking-fusion.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

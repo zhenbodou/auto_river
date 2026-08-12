@@ -1,0 +1,32 @@
+[book]
+title = "Rust 智能驾驶开发：从小白到工程师"
+authors = ["Smart Driver Book"]
+description = "一本面向零基础读者、以 Rust 为主语言、系统讲解自动驾驶软件开发的实战教程。"
+language = "zh-CN"
+src = "src"
+
+[build]
+build-dir = "book"
+create-missing = true
+
+[output.html]
+default-theme = "rust"
+preferred-dark-theme = "navy"
+mathjax-support = true
+git-repository-url = ""
+edit-url-template = ""
+copy-fonts = true
+no-section-label = false
+
+[output.html.fold]
+enable = true
+level = 1
+
+[output.html.playground]
+editable = false
+copyable = true
+
+[output.html.search]
+enable = true
+limit-results = 30
+use-boolean-and = true

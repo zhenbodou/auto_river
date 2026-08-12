@@ -1,0 +1,532 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN" class="rust" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>8.4 消息定义与序列化 - Rust 智能驾驶开发：从小白到工程师</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="一本面向零基础读者、以 Rust 为主语言、系统讲解自动驾驶软件开发的实战教程。">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+        <!-- MathJax -->
+        <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "rust";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../preface.html">前言：这本书能带你到哪里</a></li><li class="chapter-item expanded affix "><a href="../how-to-use.html">如何使用本书</a></li><li class="chapter-item expanded affix "><li class="part-title">第一部分 · 认识智能驾驶</li><li class="chapter-item expanded "><a href="../part1/levels.html"><strong aria-hidden="true">1.</strong> 1.1 什么是自动驾驶：从 L0 到 L5</a></li><li class="chapter-item expanded "><a href="../part1/architecture.html"><strong aria-hidden="true">2.</strong> 1.2 一辆自动驾驶车的软件全景</a></li><li class="chapter-item expanded "><a href="../part1/pipeline.html"><strong aria-hidden="true">3.</strong> 1.3 感知—定位—预测—规划—控制 五大模块</a></li><li class="chapter-item expanded "><a href="../part1/why-rust.html"><strong aria-hidden="true">4.</strong> 1.4 为什么在智能驾驶里用 Rust</a></li><li class="chapter-item expanded "><a href="../part1/industry.html"><strong aria-hidden="true">5.</strong> 1.5 行业现状、岗位与技术栈地图</a></li><li class="chapter-item expanded affix "><li class="part-title">第二部分 · 面向智驾的 Rust 语言基础</li><li class="chapter-item expanded "><a href="../part2/setup.html"><strong aria-hidden="true">6.</strong> 2.1 搭建 Rust 开发环境</a></li><li class="chapter-item expanded "><a href="../part2/ownership.html"><strong aria-hidden="true">7.</strong> 2.2 所有权、借用与生命周期</a></li><li class="chapter-item expanded "><a href="../part2/traits.html"><strong aria-hidden="true">8.</strong> 2.3 类型系统、trait 与泛型</a></li><li class="chapter-item expanded "><a href="../part2/errors.html"><strong aria-hidden="true">9.</strong> 2.4 错误处理：Result、Option 与 anyhow</a></li><li class="chapter-item expanded "><a href="../part2/concurrency.html"><strong aria-hidden="true">10.</strong> 2.5 并发与异步：线程、channel、tokio</a></li><li class="chapter-item expanded "><a href="../part2/ecosystem.html"><strong aria-hidden="true">11.</strong> 2.6 智驾常用 crate 生态速览</a></li><li class="chapter-item expanded "><a href="../part2/performance-ffi.html"><strong aria-hidden="true">12.</strong> 2.7 性能工程、unsafe 与 C/C++ FFI</a></li><li class="chapter-item expanded affix "><li class="part-title">第三部分 · 传感器、坐标系与数据</li><li class="chapter-item expanded "><a href="../part3/sensors.html"><strong aria-hidden="true">13.</strong> 3.1 传感器全家福：相机、激光雷达、毫米波、IMU、GNSS</a></li><li class="chapter-item expanded "><a href="../part3/coordinates.html"><strong aria-hidden="true">14.</strong> 3.2 坐标系与刚体变换</a></li><li class="chapter-item expanded "><a href="../part3/time-sync.html"><strong aria-hidden="true">15.</strong> 3.3 时间戳、同步与数据流</a></li><li class="chapter-item expanded "><a href="../part3/data-model.html"><strong aria-hidden="true">16.</strong> 3.4 用 Rust 表达传感器数据</a></li><li class="chapter-item expanded "><a href="../part3/calibration.html"><strong aria-hidden="true">17.</strong> 3.5 传感器标定、运动补偿与在线健康监测</a></li><li class="chapter-item expanded affix "><li class="part-title">第四部分 · 感知</li><li class="chapter-item expanded "><a href="../part4/overview.html"><strong aria-hidden="true">18.</strong> 4.1 感知任务总览</a></li><li class="chapter-item expanded "><a href="../part4/image.html"><strong aria-hidden="true">19.</strong> 4.2 图像处理基础与 Rust 实现</a></li><li class="chapter-item expanded "><a href="../part4/inference.html"><strong aria-hidden="true">20.</strong> 4.3 深度学习推理：onnxruntime / tract / candle</a></li><li class="chapter-item expanded "><a href="../part4/pointcloud.html"><strong aria-hidden="true">21.</strong> 4.4 点云处理与激光雷达感知</a></li><li class="chapter-item expanded "><a href="../part4/tracking-fusion.html"><strong aria-hidden="true">22.</strong> 4.5 多目标跟踪与传感器融合</a></li><li class="chapter-item expanded "><a href="../part4/data-loop.html"><strong aria-hidden="true">23.</strong> 4.6 感知数据闭环与量产评测</a></li><li class="chapter-item expanded affix "><li class="part-title">第五部分 · 定位、建图与状态估计</li><li class="chapter-item expanded "><a href="../part5/kalman.html"><strong aria-hidden="true">24.</strong> 5.1 状态估计与卡尔曼滤波</a></li><li class="chapter-item expanded "><a href="../part5/localization.html"><strong aria-hidden="true">25.</strong> 5.2 定位：GNSS/IMU 组合导航与地图匹配</a></li><li class="chapter-item expanded "><a href="../part5/slam-hdmap.html"><strong aria-hidden="true">26.</strong> 5.3 SLAM 与高精地图概览</a></li><li class="chapter-item expanded affix "><li class="part-title">第六部分 · 预测与规划</li><li class="chapter-item expanded "><a href="../part6/prediction.html"><strong aria-hidden="true">27.</strong> 6.1 行为预测</a></li><li class="chapter-item expanded "><a href="../part6/planning.html"><strong aria-hidden="true">28.</strong> 6.2 路径与轨迹规划</a></li><li class="chapter-item expanded "><a href="../part6/decision.html"><strong aria-hidden="true">29.</strong> 6.3 决策与行为规划</a></li><li class="chapter-item expanded affix "><li class="part-title">第七部分 · 控制</li><li class="chapter-item expanded "><a href="../part7/vehicle-model.html"><strong aria-hidden="true">30.</strong> 7.1 车辆运动学与动力学模型</a></li><li class="chapter-item expanded "><a href="../part7/control.html"><strong aria-hidden="true">31.</strong> 7.2 横向与纵向控制：PID 到 MPC</a></li><li class="chapter-item expanded affix "><li class="part-title">第八部分 · 中间件与系统集成</li><li class="chapter-item expanded "><a href="../part8/middleware.html"><strong aria-hidden="true">32.</strong> 8.1 自动驾驶中间件全景</a></li><li class="chapter-item expanded "><a href="../part8/ros2-rclrs.html"><strong aria-hidden="true">33.</strong> 8.2 ROS 2 与 rclrs：用 Rust 写节点</a></li><li class="chapter-item expanded "><a href="../part8/zenoh-dds.html"><strong aria-hidden="true">34.</strong> 8.3 Zenoh、DDS 与零拷贝通信</a></li><li class="chapter-item expanded "><a href="../part8/messages.html" class="active"><strong aria-hidden="true">35.</strong> 8.4 消息定义与序列化</a></li><li class="chapter-item expanded "><a href="../part8/runtime-engineering.html"><strong aria-hidden="true">36.</strong> 8.5 运行时工程：背压、可观测性与资源预算</a></li><li class="chapter-item expanded affix "><li class="part-title">第九部分 · 仿真、测试与安全</li><li class="chapter-item expanded "><a href="../part9/simulation.html"><strong aria-hidden="true">37.</strong> 9.1 仿真：CARLA 与数据回放</a></li><li class="chapter-item expanded "><a href="../part9/testing.html"><strong aria-hidden="true">38.</strong> 9.2 测试策略：单元、集成与录制回放</a></li><li class="chapter-item expanded "><a href="../part9/safety.html"><strong aria-hidden="true">39.</strong> 9.3 功能安全、实时性与部署</a></li><li class="chapter-item expanded "><a href="../part9/cybersecurity.html"><strong aria-hidden="true">40.</strong> 9.4 汽车网络安全、供应链与安全 OTA</a></li><li class="chapter-item expanded "><a href="../part9/safety-case.html"><strong aria-hidden="true">41.</strong> 9.5 系统工程、安全论证与故障注入</a></li><li class="chapter-item expanded affix "><li class="part-title">第十部分 · 实战与职业</li><li class="chapter-item expanded "><a href="../part10/project.html"><strong aria-hidden="true">42.</strong> 10.1 实战项目：搭一个最小自动驾驶栈</a></li><li class="chapter-item expanded "><a href="../part10/career.html"><strong aria-hidden="true">43.</strong> 10.2 学习路线图与求职准备</a></li><li class="chapter-item expanded "><a href="../part10/glossary.html"><strong aria-hidden="true">44.</strong> 10.3 常见术语表</a></li><li class="chapter-item expanded "><a href="../part10/competency.html"><strong aria-hidden="true">45.</strong> 10.4 逐章能力验收与作品集证据</a></li><li class="chapter-item expanded "><a href="../part10/capstone.html"><strong aria-hidden="true">46.</strong> 10.5 中高级毕业项目：从最小栈到可评审系统</a></li><li class="chapter-item expanded affix "><li class="spacer"></li><li class="chapter-item expanded affix "><a href="../afterword.html">后记与延伸资源</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Rust 智能驾驶开发：从小白到工程师</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="84-消息定义与序列化"><a class="header" href="#84-消息定义与序列化">8.4 消息定义与序列化</a></h1>
+<p>前两节我们反复回避一个问题：节点之间传的<strong>字节到底长什么样</strong>？8.2 里 ROS 2 帮我们生成了消息代码、钦定了 CDR 格式；8.3 里 Zenoh 干脆不管，我们随手用了 JSON。现在正面回答它——因为这是<strong>模块间的契约（contract）</strong>，是把第 1.3 节那五个模块的输入输出真正"钉死"下来的东西。</p>
+<p>这一节讲：消息定义为什么是契约、IDL/msg 怎么写、几种主流序列化格式（CDR、Protobuf、Cap'n Proto、FlatBuffers、serde 生态）如何取舍、版本怎么演进而不把老节点搞崩、大消息（点云/图像）怎么处理，最后是录制格式 <strong>mcap</strong>——它把这张计算图的所有消息按时间戳存下来，是第九部分数据回放的基础。我们会用 <code>prost</code> 给出定义并收发一个障碍物消息的<strong>完整 Rust 代码</strong>。</p>
+<h2 id="消息即契约把-13-的接口钉死"><a class="header" href="#消息即契约把-13-的接口钉死">消息即契约：把 1.3 的接口钉死</a></h2>
+<p>回想第 1.3 节：感知输出障碍物列表、预测输出多模态轨迹、规划输出轨迹点、控制输出指令。这些"输出→输入"的衔接处，就是模块间的<strong>接口</strong>。当模块变成独立进程后，接口不再是一个 Rust 函数签名（编译器能替你检查），而是<strong>一段在网络上流动的字节</strong>——没有编译器跨进程帮你检查了。</p>
+<p>所以消息定义承担了原本编译器的活：它是一份<strong>双方都同意、机器可读的契约</strong>，规定"这个话题上的字节，必须能解释成这样一个结构"。契约的价值在于<strong>解耦</strong>——感知团队和规划团队只要都认这份 <code>Obstacle</code> 定义，各自用什么语言、怎么实现、什么时候发版，互不干扰。这也是 8.1 说的计算图"可局部替换"的根基：接口不变，节点随便换。</p>
+<blockquote>
+<p><strong>中高级视角</strong>：把消息当契约，意味着<strong>改消息是一件严肃的事</strong>，和改一个公开 API 一样。加个字段、改个类型、删个字段，都可能悄悄搞崩线上某个你忘了的订阅者。成熟团队会把消息定义单独放一个仓库（像我们的 <code>smart_driver_msgs</code>）、做评审、做版本管理——因为它是几十个节点共同依赖的地基。</p>
+</blockquote>
+<h2 id="idl--msg用中立语言描述结构"><a class="header" href="#idl--msg用中立语言描述结构">IDL / msg：用中立语言描述结构</a></h2>
+<p>契约不能用某一种语言的结构体写（否则别的语言的节点读不懂），要用一种<strong>中立的接口描述语言（IDL，Interface Definition Language）</strong>。8.2 里的 <code>.msg</code> 就是 ROS 2 的 IDL；Protobuf 有 <code>.proto</code>；Cap'n Proto 有 <code>.capnp</code>。它们长得都差不多——声明字段名、类型、顺序：</p>
+<pre><code class="language-text"># ROS 2 .msg（8.2 见过）
+uint32     id
+float64[3] position
+float32    confidence
+</code></pre>
+<pre><code class="language-protobuf">// Protobuf .proto
+message Obstacle {
+  uint32 id = 1;              // 注意每个字段有个"字段号"
+  repeated double position = 2;
+  float confidence = 3;
+}
+</code></pre>
+<p>一个**代码生成器（code generator）**吃掉 IDL，为每种目标语言吐出对应的结构体/类，以及"如何把它变成字节 / 从字节变回来"的序列化代码。你写 IDL 一次，C++/Python/Rust 各得一套一致的类型——这就是跨语言互通的机制，8.2 的 <code>rosidl_generator_rs</code>、下面要用的 <code>prost</code> 都是这类生成器。</p>
+<h2 id="序列化格式横向对比"><a class="header" href="#序列化格式横向对比">序列化格式横向对比</a></h2>
+<p><strong>序列化（serialization）</strong> = 把内存里的结构变成一串可传输/可存储的字节；<strong>反序列化</strong>是逆操作。格式的选择直接影响延迟、带宽、兼容性，是中高级工程师要能张口就答的取舍。</p>
+<div class="table-wrapper"><table><thead><tr><th>格式</th><th>编码</th><th>速度</th><th>体积</th><th>零拷贝</th><th>模式演进</th><th>自描述</th><th>智驾里的位置</th></tr></thead><tbody>
+<tr><td><strong>JSON</strong></td><td>文本</td><td>慢</td><td>大</td><td>否</td><td>灵活</td><td>是</td><td>调试、配置、Web 接口；<strong>不上高频数据流</strong></td></tr>
+<tr><td><strong>ROS CDR</strong></td><td>二进制</td><td>快</td><td>小</td><td>否</td><td>弱（靠约定）</td><td>否</td><td>ROS 2 的线上格式，DDS 标准</td></tr>
+<tr><td><strong>Protobuf</strong></td><td>二进制</td><td>快</td><td>小</td><td>否</td><td><strong>强（字段号）</strong></td><td>否</td><td>跨服务/跨语言事实标准，Apollo 在用</td></tr>
+<tr><td><strong>Cap'n Proto</strong></td><td>二进制</td><td>极快</td><td>中</td><td><strong>是</strong></td><td>强</td><td>否</td><td>追求极致延迟、内存即传输</td></tr>
+<tr><td><strong>FlatBuffers</strong></td><td>二进制</td><td>极快</td><td>中</td><td><strong>是</strong></td><td>强</td><td>否</td><td>大消息零拷贝读，游戏/车机常用</td></tr>
+</tbody></table>
+</div>
+<p>逐个说清它们的性格：</p>
+<ul>
+<li>
+<p><strong>JSON</strong>：人能读、自描述、改起来随便，但<strong>文本编码又慢又占地方</strong>（一个 <code>f64</code> 要十几个字符）。它属于"调试和低频配置"，8.3 里我们用它纯粹是为了让例子简单。<strong>任何高频数据流用 JSON 都是错的</strong>。</p>
+</li>
+<li>
+<p><strong>CDR（Common Data Representation）</strong>：DDS/ROS 2 的线上格式。紧凑的二进制、编解码快。它<strong>不自描述</strong>——字节里没有字段名和类型信息，全靠收发双方共享同一份 <code>.msg</code> 定义来解释。所以 8.2 那句"序列化格式才是真正的契约"：Rust 节点和 C++ 节点内存布局不同，但都按 CDR 规则编码，就能互通。</p>
+</li>
+<li>
+<p><strong>Protobuf（Protocol Buffers）</strong>：Google 出品，跨语言序列化的事实标准，百度 Apollo 大量使用。杀手锏是<strong>用字段号（tag）而非字段顺序来标识字段</strong>——这让它的<strong>版本演进特别稳健</strong>（下节详述）。Rust 侧有极好的 <code>prost</code> crate，下面就用它。</p>
+</li>
+<li>
+<p><strong>Cap'n Proto</strong>：号称"比 Protobuf 快无限倍"，因为它<strong>没有编解码步骤</strong>——它的内存布局<strong>就是</strong>传输布局。你拿到字节，直接当结构体读，不用 parse。这正是 8.3 说的<strong>零拷贝</strong>的序列化侧。</p>
+</li>
+<li>
+<p><strong>FlatBuffers</strong>：思路和 Cap'n Proto 类似——<strong>零拷贝读取</strong>，拿到 buffer 不解析就能按需访问任一字段。特别适合<strong>大消息、只读部分字段</strong>的场景（比如订阅者只想看点云消息头里的时间戳，不想 parse 全部 12 万个点）。</p>
+</li>
+<li>
+<p><strong>serde 生态</strong>：Rust 的 <code>serde</code> 是一套序列化<strong>框架</strong>，不是具体格式。给结构体 <code>#[derive(Serialize, Deserialize)]</code>，就能配上各种后端：<code>serde_json</code>（JSON）、<code>bincode</code>（紧凑二进制）、<code>postcard</code>（为嵌入式优化的紧凑格式）、<code>ciborium</code>（CBOR）等。<strong>纯 Rust、不跨语言的内部通信</strong>，<code>serde + bincode/postcard</code> 是最省事的组合——8.3 那个例子就可以把 <code>serde_json</code> 换成 <code>bincode</code> 立刻变快变小。</p>
+</li>
+</ul>
+<p>选型口诀：</p>
+<ul>
+<li><strong>在 ROS 2 里</strong> → 你没得选，就是 CDR（自动的），你只管写 <code>.msg</code>。</li>
+<li><strong>跨语言、跨服务、要长期演进</strong> → <strong>Protobuf</strong>（<code>prost</code>）。</li>
+<li><strong>同机大消息、追求极致零拷贝</strong> → <strong>Cap'n Proto / FlatBuffers</strong>，配 8.3 的共享内存。</li>
+<li><strong>纯 Rust 内部、图省事</strong> → <strong>serde + bincode/postcard</strong>。</li>
+<li><strong>JSON</strong> → 只在调试、配置、和外部 Web 系统对接时用。</li>
+</ul>
+<h2 id="用-prost-定义并收发障碍物完整-rust-代码"><a class="header" href="#用-prost-定义并收发障碍物完整-rust-代码">用 prost 定义并收发障碍物（完整 Rust 代码）</a></h2>
+<p><code>prost</code> 是 Rust 里用 Protobuf 的主流方式：它把 <code>.proto</code> 编译成地道的 Rust 结构体（普通 <code>struct</code> + <code>#[derive]</code>，不是丑陋的生成代码），序列化走 <code>bytes</code>。我们把 8.3 那个障碍物换成 Protobuf 编码。</p>
+<p>项目 <code>prost_demo</code>，<code>Cargo.toml</code>：</p>
+<pre><code class="language-toml">[package]
+name = "prost_demo"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+prost = "0.13"        # Protobuf 运行时
+bytes = "1"           # prost 用它做零拷贝的字节缓冲
+
+[build-dependencies]
+prost-build = "0.13"  # 在 build.rs 里把 .proto 编成 Rust
+</code></pre>
+<p><code>.proto</code> 文件放 <code>proto/obstacle.proto</code>：</p>
+<pre><code class="language-protobuf">syntax = "proto3";
+package smart_driver;
+
+// 障碍物类别用 enum，比裸 uint8 更自描述
+enum ObstacleClass {
+  UNKNOWN = 0;      // proto3 要求第一个枚举值为 0
+  VEHICLE = 1;
+  PEDESTRIAN = 2;
+  CYCLIST = 3;
+}
+
+// 对应第 1.3 节的 Obstacle。字段号（= 后面的数字）一旦分配，永不复用。
+message Obstacle {
+  uint32 id = 1;
+  ObstacleClass obstacle_class = 2;
+  repeated double position = 3;   // x, y, z
+  repeated double velocity = 4;
+  repeated double size = 5;
+  double heading = 6;
+  float confidence = 7;
+}
+
+// 一帧感知输出
+message ObstacleArray {
+  double stamp = 1;               // 时间戳（秒）
+  string frame_id = 2;            // 坐标系名，如 "ego"
+  repeated Obstacle obstacles = 3;
+}
+</code></pre>
+<p><code>build.rs</code>（放项目根）——构建时自动生成 Rust 代码：</p>
+<pre><code class="language-rust ignore">fn main() {
+    prost_build::compile_protos(&amp;["proto/obstacle.proto"], &amp;["proto/"])
+        .expect("编译 .proto 失败");
+}</code></pre>
+<p><code>src/main.rs</code>——在一个进程里演示"发送方编码 → 字节 →（这里就代表在网络上传输）→ 接收方解码 → 处理"，把序列化闭环讲透。真实系统里这两半分别在 8.2 的发布回调、订阅回调，或 8.3 的 <code>publisher.put</code> / <code>subscriber.recv_async</code> 里：</p>
+<pre><code class="language-rust ignore">use prost::Message; // 提供 encode_to_vec / decode
+
+// 引入 prost 生成的模块。prost_build 默认按 proto 的 package 名建模块。
+pub mod smart_driver {
+    include!(concat!(env!("OUT_DIR"), "/smart_driver.rs"));
+}
+use smart_driver::{obstacle_class, Obstacle, ObstacleArray, ObstacleClass};
+
+/// 发送方：造一帧障碍物并编码成 Protobuf 字节。
+fn encode_frame(seq: u32) -&gt; Vec&lt;u8&gt; {
+    let dt = 0.1_f64;
+    let lateral = -1.5 + 0.3 * (seq as f64) * dt;
+
+    let pedestrian = Obstacle {
+        id: 42,
+        // prost 把 proto enum 生成为 i32 字段；用生成的枚举取值更安全。
+        obstacle_class: ObstacleClass::Pedestrian as i32,
+        position: vec![30.0, lateral, 0.0],
+        velocity: vec![0.0, 0.3, 0.0],
+        size: vec![0.5, 0.5, 1.7],
+        heading: std::f64::consts::FRAC_PI_2,
+        confidence: 0.92,
+    };
+
+    let frame = ObstacleArray {
+        stamp: seq as f64 * dt,
+        frame_id: "ego".to_string(),
+        obstacles: vec![pedestrian],
+    };
+
+    // 核心：编码成字节。这就是会被 put 到话题上的东西。
+    frame.encode_to_vec()
+}
+
+/// 接收方：从字节解码回 ObstacleArray 并做风险判断。
+fn decode_and_process(bytes: &amp;[u8]) -&gt; Result&lt;(), prost::DecodeError&gt; {
+    let frame = ObstacleArray::decode(bytes)?; // 从字节还原结构
+    println!(
+        "[recv] t={:.1}s frame={} 共 {} 个障碍物",
+        frame.stamp,
+        frame.frame_id,
+        frame.obstacles.len()
+    );
+
+    for ob in &amp;frame.obstacles {
+        // 把 i32 转回枚举，proto3 里未知值会落到 Unknown 之外，需处理。
+        let class = obstacle_class::from_i32_name(ob.obstacle_class);
+        let ahead = ob.position[0];
+        let lateral = ob.position[1];
+        let lateral_v = ob.velocity[1];
+        let approaching = lateral * lateral_v &lt; 0.0;
+
+        if ahead &gt; 0.0 &amp;&amp; ahead &lt; 50.0 &amp;&amp; approaching {
+            let ttc = if lateral_v.abs() &gt; 1e-3 {
+                lateral.abs() / lateral_v.abs()
+            } else {
+                f64::INFINITY
+            };
+            println!(
+                "  ⚠ {:?}#{} 前方 {:.1}m 横穿，约 {:.1}s 到车道中心 -&gt; 减速让行",
+                class, ob.id, ahead, ttc
+            );
+        } else {
+            println!("  · {:?}#{} 前方 {:.1}m，暂无风险", class, ob.id, ahead);
+        }
+    }
+    Ok(())
+}
+
+// 辅助：把 i32 映射回可读枚举名（生成的代码提供 ObstacleClass::try_from）
+mod obstacle_class {
+    use super::ObstacleClass;
+    pub fn from_i32_name(v: i32) -&gt; ObstacleClass {
+        ObstacleClass::try_from(v).unwrap_or(ObstacleClass::Unknown)
+    }
+}
+
+fn main() {
+    // 模拟三帧：编码 -&gt; （网络/共享内存传输）-&gt; 解码处理
+    for seq in 0..3 {
+        let bytes = encode_frame(seq);
+        println!(
+            "[send] 第 {seq} 帧编码为 {} 字节 protobuf",
+            bytes.len()
+        );
+        // 这里 bytes 就是会在 8.2 的 publisher.publish 或
+        // 8.3 的 publisher.put 里被发送的负载。
+        decode_and_process(&amp;bytes).expect("解码失败");
+        println!();
+    }
+}</code></pre>
+<p><code>cargo run</code> 会看到每帧被编码成<strong>几十字节</strong>的紧凑二进制（对比同样内容的 JSON 会大好几倍），解码后行人 <code>y</code> 逐帧逼近车道、<code>ttc</code> 递减——又是第 1.3 节那个场景，这次以 Protobuf 契约的形态。</p>
+<p>把这段接进真实中间件很直接：<code>encode_to_vec()</code> 的结果就是 8.3 里 <code>publisher.put(bytes)</code> 的参数，<code>ObstacleArray::decode(sample.payload().to_bytes())</code> 就是订阅回调里的第一句。<strong>Protobuf 负责"结构↔字节"，中间件负责"字节从这里到那里"，两件事正交。</strong></p>
+<h2 id="版本兼容与演进别把老节点搞崩"><a class="header" href="#版本兼容与演进别把老节点搞崩">版本兼容与演进：别把老节点搞崩</a></h2>
+<p>契约会变——需求变了，<code>Obstacle</code> 要加个"是否被遮挡"的字段。问题是：<strong>新节点发的消息，老节点还能读吗？老节点发的，新节点能读吗？</strong> 这就是<strong>前向/后向兼容（forward/backward compatibility）</strong>。</p>
+<p>Protobuf 在这件事上是标杆，规则简单到能背下来：</p>
+<ul>
+<li><strong>加字段</strong>：给个<strong>新的字段号</strong>。老节点解码时遇到不认识的字段号，<strong>直接跳过</strong>，照常工作（后向兼容）；新节点读老消息时，缺的字段取默认值（前向兼容）。<strong>所以加字段是安全的。</strong></li>
+<li><strong>删字段</strong>：<strong>永远不要复用它的字段号</strong>。把字段标记为 <code>reserved</code>，防止将来有人拿这个号做别的、和老数据打架。</li>
+<li><strong>改类型/改字段号</strong>：<strong>危险</strong>，等于毁约。老新节点会用不同方式解释同一段字节，静默出错。要改就当成"加新字段 + 弃用旧字段"。</li>
+</ul>
+<pre><code class="language-protobuf">message Obstacle {
+  // ... 原有字段 ...
+  bool occluded = 8;          // ✅ 安全：新字段号，老节点忽略它
+  reserved 9;                 // 曾经用过、已删除的字段号，永久占位
+  reserved "old_field_name";
+}
+</code></pre>
+<p>对比一下：<strong>CDR（ROS 2）没有字段号</strong>，靠字段顺序和 <code>.msg</code> 的严格一致来解释字节。所以在 ROS 2 里改消息<strong>更脆</strong>——加个字段就可能让老节点错位解析。ROS 2 生态因此对"消息包版本"管理很谨慎。这正是 Apollo 选 Protobuf、以及很多"要长期演进"的系统偏爱 Protobuf 的原因。</p>
+<blockquote>
+<p><strong>面试题</strong>：为什么 Protobuf 加字段是安全的，而在 ROS 2（CDR）里加字段可能搞崩老节点？
+<strong>答</strong>：Protobuf 用<strong>字段号</strong>标识每个字段，编码里带着号，老节点遇到不认识的号就跳过、缺失字段用默认值，所以新老可以共存。CDR <strong>不带字段标识</strong>，纯按 <code>.msg</code> 里字段的顺序和类型紧密排列字节；加一个字段会改变后续字节的偏移，老节点仍按旧布局解析，就会<strong>错位</strong>读到垃圾。前者为演进而设计，后者为紧凑而牺牲了演进弹性。</p>
+</blockquote>
+<h2 id="大消息点云和图像怎么办"><a class="header" href="#大消息点云和图像怎么办">大消息：点云和图像怎么办</a></h2>
+<p>障碍物列表才几十字节，但点云 2 MB、图像 6 MB——大消息有它自己的一套讲究，把前几节的线索收在一起：</p>
+<ol>
+<li>
+<p><strong>别把大数据当普通消息反复序列化</strong>。一帧点云 12 万个 <code>(x,y,z,intensity)</code>，用 Protobuf 的 <code>repeated Point</code> 去编码，光遍历打包就很慢。常见做法是<strong>把点云打包成一段紧凑的字节 blob</strong>（固定布局的 <code>Vec&lt;u8&gt;</code>，如 ROS 的 <code>PointCloud2</code> 就是"头 + 一大块原始字节"），消息里只放这块 blob 和描述它布局的元信息（每个点几字节、字段偏移）。解析时按元信息 <code>reinterpret</code>，不逐点反序列化。</p>
+</li>
+<li>
+<p><strong>同机就上零拷贝共享内存</strong>（8.3）。大消息是零拷贝收益最大的地方。配合 <strong>FlatBuffers/Cap'n Proto</strong> 这类"内存即传输"的格式，订阅者拿到共享内存指针<strong>直接当结构体读</strong>，全程零拷贝、零解析。这是"点云 30 Hz 实时"的标准解法。</p>
+</li>
+<li>
+<p><strong>消息里带 header</strong>（时间戳 + frame_id）。大消息尤其要能只读 header 判断"这帧要不要处理"，而不解开整块数据——FlatBuffers 的按需访问在这里发光。</p>
+</li>
+<li>
+<p><strong>能不发就不发</strong>。如果多个节点在同机、且都要原始点云，考虑让它们共享同一块内存而不是各订阅一份。传输最快的数据是<strong>没被传输的数据</strong>。</p>
+</li>
+</ol>
+<h2 id="录制格式rosbag-与-mcap接上数据闭环"><a class="header" href="#录制格式rosbag-与-mcap接上数据闭环">录制格式：rosbag 与 mcap，接上数据闭环</a></h2>
+<p>计算图的最后一块拼图：既然所有模块只通过话题上的消息通信，那把<strong>所有话题的消息连同时间戳录下来</strong>，就等于录下了整个系统在某段时间的完整"经历"。事后离线重放这些消息，就能<strong>精确复现</strong>一次路测——这是仿真、测试、数据闭环的基石（第九部分主角）。</p>
+<ul>
+<li>
+<p><strong>rosbag</strong>：ROS 传统的录制格式（ROS 2 是 <code>rosbag2</code>）。<code>ros2 bag record /obstacles /ego_pose ...</code> 就把这些话题的消息全存下来，<code>ros2 bag play</code> 重放。它和 ROS 深度绑定。</p>
+</li>
+<li>
+<p><strong>mcap</strong>：一个<strong>更现代、自描述、与框架无关</strong>的录制容器格式（由 Foxglove 推动，已成 ROS 2 的推荐存储格式）。它的好处：不绑定 ROS（Zenoh、自研中间件的数据也能存）、内建索引（能快速跳到某个时间点，不用从头扫）、每条消息带 schema（自描述，多年后还能解开）、对大消息友好。<strong>而且它有 Rust 库</strong>（<code>mcap</code> crate），和这本书的技术栈天然契合。</p>
+</li>
+</ul>
+<p>用 <code>mcap</code> crate 读一个录制文件、遍历消息的骨架（真实项目里你会拿这些字节喂给 prost/CDR 解码）：</p>
+<pre><code class="language-rust ignore">// Cargo.toml: mcap = "0.9",  memmap2 = "0.9"
+use std::fs;
+
+fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
+    let data = fs::read("drive_2026_08_12.mcap")?;
+    // mcap::MessageStream 按写入顺序（或时间）遍历所有消息
+    for message in mcap::MessageStream::new(&amp;data)? {
+        let msg = message?;
+        // channel 描述这条消息属于哪个话题、用什么 schema/编码
+        println!(
+            "t={} 话题={} 负载={} 字节",
+            msg.log_time,
+            msg.channel.topic,
+            msg.data.len()
+        );
+        // 若 channel.message_encoding 是 "protobuf"，就用上面的
+        // ObstacleArray::decode(&amp;msg.data) 把它还原成结构体；
+        // 若是 "cdr"，则用 CDR 解码。schema 名告诉你是哪种消息。
+    }
+    Ok(())
+}</code></pre>
+<p>看出闭环了吗：<strong>在线</strong>时你的 Rust 节点用 prost/CDR 编码消息、经 ROS 2 或 Zenoh 发出；一个录制节点把它们连同时间戳、schema 写进 mcap；<strong>离线</strong>时你用 <code>mcap</code> crate 读回来、用同一份契约解码、喂给算法重跑——这正是你手边 <code>inf/</code> 那类离线推理管线做的事的输入端。<strong>消息契约在在线和离线两侧是同一份</strong>，这就是为什么 8.1 说"在线是计算图、离线是数据管线，共享同一套节点+消息的世界观"。</p>
+<h2 id="小结"><a class="header" href="#小结">小结</a></h2>
+<ul>
+<li>消息定义是模块间的<strong>契约</strong>，把第 1.3 节各模块的 IO 从"函数签名"升级为"跨进程的字节约定"；改它是严肃的事，应单独仓库 + 评审 + 版本管理。</li>
+<li>用中立的 <strong>IDL/msg</strong>（<code>.msg</code>/<code>.proto</code>/<code>.capnp</code>）描述结构，代码生成器为各语言产出一致类型——这是跨语言互通的机制。</li>
+<li>序列化格式取舍：<strong>ROS 里用 CDR</strong>（自动）、<strong>跨语言长期演进用 Protobuf（prost）</strong>、<strong>同机大消息极致零拷贝用 Cap'n Proto/FlatBuffers</strong>、<strong>纯 Rust 内部用 serde+bincode/postcard</strong>、<strong>JSON 只配调试</strong>。</li>
+<li>我们用 <code>prost</code> 写了 <code>.proto</code> 定义 + <code>build.rs</code> 生成 + 编码/解码/处理的<strong>完整 Rust 代码</strong>，<code>encode_to_vec()</code>/<code>decode()</code> 正好接 8.2 的 publish / 8.3 的 put。</li>
+<li><strong>版本演进</strong>：Protobuf 靠字段号，加字段安全、删字段要 <code>reserved</code>、改类型危险；CDR 无字段号更脆——这是 Protobuf 受青睐的核心原因。</li>
+<li><strong>大消息</strong>（点云/图像）：打包成 blob + 元信息、同机上零拷贝共享内存 + FlatBuffers、带 header、能不发就不发。</li>
+<li><strong>录制格式</strong>：<code>rosbag2</code> 绑 ROS，<strong>mcap</strong> 自描述、跨框架、有索引、<strong>有 Rust 库</strong>，把计算图的消息连同时间戳/schema 存下，在线编码与离线解码共享同一份契约——直通第九部分的仿真与回放。</li>
+</ul>
+<p>第八部分到此完整：从中间件全景（8.1）、到 ROS 2 + rclrs 写节点（8.2）、到 Zenoh/DDS 与零拷贝（8.3）、到消息契约与序列化（8.4），你已经能把第一部分那张"并发的节点图"用 Rust 真正搭起来、让它们高效可靠地对话、并把对话录下来供日后回放。下一部分，我们就走进那个"回放"的世界——仿真、测试与安全。</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../part8/zenoh-dds.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../part8/runtime-engineering.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../part8/zenoh-dds.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../part8/runtime-engineering.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

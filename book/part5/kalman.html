@@ -1,0 +1,603 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN" class="rust" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>5.1 状态估计与卡尔曼滤波 - Rust 智能驾驶开发：从小白到工程师</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="一本面向零基础读者、以 Rust 为主语言、系统讲解自动驾驶软件开发的实战教程。">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+        <!-- MathJax -->
+        <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "rust";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../preface.html">前言：这本书能带你到哪里</a></li><li class="chapter-item expanded affix "><a href="../how-to-use.html">如何使用本书</a></li><li class="chapter-item expanded affix "><li class="part-title">第一部分 · 认识智能驾驶</li><li class="chapter-item expanded "><a href="../part1/levels.html"><strong aria-hidden="true">1.</strong> 1.1 什么是自动驾驶：从 L0 到 L5</a></li><li class="chapter-item expanded "><a href="../part1/architecture.html"><strong aria-hidden="true">2.</strong> 1.2 一辆自动驾驶车的软件全景</a></li><li class="chapter-item expanded "><a href="../part1/pipeline.html"><strong aria-hidden="true">3.</strong> 1.3 感知—定位—预测—规划—控制 五大模块</a></li><li class="chapter-item expanded "><a href="../part1/why-rust.html"><strong aria-hidden="true">4.</strong> 1.4 为什么在智能驾驶里用 Rust</a></li><li class="chapter-item expanded "><a href="../part1/industry.html"><strong aria-hidden="true">5.</strong> 1.5 行业现状、岗位与技术栈地图</a></li><li class="chapter-item expanded affix "><li class="part-title">第二部分 · 面向智驾的 Rust 语言基础</li><li class="chapter-item expanded "><a href="../part2/setup.html"><strong aria-hidden="true">6.</strong> 2.1 搭建 Rust 开发环境</a></li><li class="chapter-item expanded "><a href="../part2/ownership.html"><strong aria-hidden="true">7.</strong> 2.2 所有权、借用与生命周期</a></li><li class="chapter-item expanded "><a href="../part2/traits.html"><strong aria-hidden="true">8.</strong> 2.3 类型系统、trait 与泛型</a></li><li class="chapter-item expanded "><a href="../part2/errors.html"><strong aria-hidden="true">9.</strong> 2.4 错误处理：Result、Option 与 anyhow</a></li><li class="chapter-item expanded "><a href="../part2/concurrency.html"><strong aria-hidden="true">10.</strong> 2.5 并发与异步：线程、channel、tokio</a></li><li class="chapter-item expanded "><a href="../part2/ecosystem.html"><strong aria-hidden="true">11.</strong> 2.6 智驾常用 crate 生态速览</a></li><li class="chapter-item expanded "><a href="../part2/performance-ffi.html"><strong aria-hidden="true">12.</strong> 2.7 性能工程、unsafe 与 C/C++ FFI</a></li><li class="chapter-item expanded affix "><li class="part-title">第三部分 · 传感器、坐标系与数据</li><li class="chapter-item expanded "><a href="../part3/sensors.html"><strong aria-hidden="true">13.</strong> 3.1 传感器全家福：相机、激光雷达、毫米波、IMU、GNSS</a></li><li class="chapter-item expanded "><a href="../part3/coordinates.html"><strong aria-hidden="true">14.</strong> 3.2 坐标系与刚体变换</a></li><li class="chapter-item expanded "><a href="../part3/time-sync.html"><strong aria-hidden="true">15.</strong> 3.3 时间戳、同步与数据流</a></li><li class="chapter-item expanded "><a href="../part3/data-model.html"><strong aria-hidden="true">16.</strong> 3.4 用 Rust 表达传感器数据</a></li><li class="chapter-item expanded "><a href="../part3/calibration.html"><strong aria-hidden="true">17.</strong> 3.5 传感器标定、运动补偿与在线健康监测</a></li><li class="chapter-item expanded affix "><li class="part-title">第四部分 · 感知</li><li class="chapter-item expanded "><a href="../part4/overview.html"><strong aria-hidden="true">18.</strong> 4.1 感知任务总览</a></li><li class="chapter-item expanded "><a href="../part4/image.html"><strong aria-hidden="true">19.</strong> 4.2 图像处理基础与 Rust 实现</a></li><li class="chapter-item expanded "><a href="../part4/inference.html"><strong aria-hidden="true">20.</strong> 4.3 深度学习推理：onnxruntime / tract / candle</a></li><li class="chapter-item expanded "><a href="../part4/pointcloud.html"><strong aria-hidden="true">21.</strong> 4.4 点云处理与激光雷达感知</a></li><li class="chapter-item expanded "><a href="../part4/tracking-fusion.html"><strong aria-hidden="true">22.</strong> 4.5 多目标跟踪与传感器融合</a></li><li class="chapter-item expanded "><a href="../part4/data-loop.html"><strong aria-hidden="true">23.</strong> 4.6 感知数据闭环与量产评测</a></li><li class="chapter-item expanded affix "><li class="part-title">第五部分 · 定位、建图与状态估计</li><li class="chapter-item expanded "><a href="../part5/kalman.html" class="active"><strong aria-hidden="true">24.</strong> 5.1 状态估计与卡尔曼滤波</a></li><li class="chapter-item expanded "><a href="../part5/localization.html"><strong aria-hidden="true">25.</strong> 5.2 定位：GNSS/IMU 组合导航与地图匹配</a></li><li class="chapter-item expanded "><a href="../part5/slam-hdmap.html"><strong aria-hidden="true">26.</strong> 5.3 SLAM 与高精地图概览</a></li><li class="chapter-item expanded affix "><li class="part-title">第六部分 · 预测与规划</li><li class="chapter-item expanded "><a href="../part6/prediction.html"><strong aria-hidden="true">27.</strong> 6.1 行为预测</a></li><li class="chapter-item expanded "><a href="../part6/planning.html"><strong aria-hidden="true">28.</strong> 6.2 路径与轨迹规划</a></li><li class="chapter-item expanded "><a href="../part6/decision.html"><strong aria-hidden="true">29.</strong> 6.3 决策与行为规划</a></li><li class="chapter-item expanded affix "><li class="part-title">第七部分 · 控制</li><li class="chapter-item expanded "><a href="../part7/vehicle-model.html"><strong aria-hidden="true">30.</strong> 7.1 车辆运动学与动力学模型</a></li><li class="chapter-item expanded "><a href="../part7/control.html"><strong aria-hidden="true">31.</strong> 7.2 横向与纵向控制：PID 到 MPC</a></li><li class="chapter-item expanded affix "><li class="part-title">第八部分 · 中间件与系统集成</li><li class="chapter-item expanded "><a href="../part8/middleware.html"><strong aria-hidden="true">32.</strong> 8.1 自动驾驶中间件全景</a></li><li class="chapter-item expanded "><a href="../part8/ros2-rclrs.html"><strong aria-hidden="true">33.</strong> 8.2 ROS 2 与 rclrs：用 Rust 写节点</a></li><li class="chapter-item expanded "><a href="../part8/zenoh-dds.html"><strong aria-hidden="true">34.</strong> 8.3 Zenoh、DDS 与零拷贝通信</a></li><li class="chapter-item expanded "><a href="../part8/messages.html"><strong aria-hidden="true">35.</strong> 8.4 消息定义与序列化</a></li><li class="chapter-item expanded "><a href="../part8/runtime-engineering.html"><strong aria-hidden="true">36.</strong> 8.5 运行时工程：背压、可观测性与资源预算</a></li><li class="chapter-item expanded affix "><li class="part-title">第九部分 · 仿真、测试与安全</li><li class="chapter-item expanded "><a href="../part9/simulation.html"><strong aria-hidden="true">37.</strong> 9.1 仿真：CARLA 与数据回放</a></li><li class="chapter-item expanded "><a href="../part9/testing.html"><strong aria-hidden="true">38.</strong> 9.2 测试策略：单元、集成与录制回放</a></li><li class="chapter-item expanded "><a href="../part9/safety.html"><strong aria-hidden="true">39.</strong> 9.3 功能安全、实时性与部署</a></li><li class="chapter-item expanded "><a href="../part9/cybersecurity.html"><strong aria-hidden="true">40.</strong> 9.4 汽车网络安全、供应链与安全 OTA</a></li><li class="chapter-item expanded "><a href="../part9/safety-case.html"><strong aria-hidden="true">41.</strong> 9.5 系统工程、安全论证与故障注入</a></li><li class="chapter-item expanded affix "><li class="part-title">第十部分 · 实战与职业</li><li class="chapter-item expanded "><a href="../part10/project.html"><strong aria-hidden="true">42.</strong> 10.1 实战项目：搭一个最小自动驾驶栈</a></li><li class="chapter-item expanded "><a href="../part10/career.html"><strong aria-hidden="true">43.</strong> 10.2 学习路线图与求职准备</a></li><li class="chapter-item expanded "><a href="../part10/glossary.html"><strong aria-hidden="true">44.</strong> 10.3 常见术语表</a></li><li class="chapter-item expanded "><a href="../part10/competency.html"><strong aria-hidden="true">45.</strong> 10.4 逐章能力验收与作品集证据</a></li><li class="chapter-item expanded "><a href="../part10/capstone.html"><strong aria-hidden="true">46.</strong> 10.5 中高级毕业项目：从最小栈到可评审系统</a></li><li class="chapter-item expanded affix "><li class="spacer"></li><li class="chapter-item expanded affix "><a href="../afterword.html">后记与延伸资源</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Rust 智能驾驶开发：从小白到工程师</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="51-状态估计与卡尔曼滤波"><a class="header" href="#51-状态估计与卡尔曼滤波">5.1 状态估计与卡尔曼滤波</a></h1>
+<p>从这一章开始，我们进入定位岗的核心地带，也是全书<strong>数学最重</strong>的一章。请泡杯咖啡，坐直，我们要一行一行把卡尔曼滤波（Kalman Filter, KF）从零推出来——不是抄公式，是让你<strong>明白每一项是从哪来的、物理上代表什么</strong>。因为在面试里，能默写五个公式的人一抓一大把，能讲清楚"卡尔曼增益为什么长这样、协方差为什么这么更新"的人才拿 offer。</p>
+<p>这章解决一个贯穿整个自动驾驶的问题：<strong>你手里全是带噪声的、各说各话的测量，怎么估计出那个你永远看不到的"真实状态"？<strong>车速表跳、GPS 飘、IMU 积分发散——没有任何一个传感器可信，但把它们</strong>按各自的可信度加权融合</strong>，你能得到比任何单一传感器都好的估计。这就是状态估计（state estimation）。</p>
+<h2 id="一先建立直觉带噪声的测量与真实状态"><a class="header" href="#一先建立直觉带噪声的测量与真实状态">一、先建立直觉：带噪声的测量与"真实状态"</a></h2>
+<p>假设你想知道车此刻的位置。你有两个信息源：</p>
+<ol>
+<li><strong>上一刻的位置 + 运动模型</strong>：上一秒你在 100.0 m，速度 10 m/s，那么这一秒你"应该"在 110.0 m。这叫<strong>预测（prediction）</strong>，它来自你对系统怎么运动的理解（运动模型）。</li>
+<li><strong>这一刻的 GPS 读数</strong>：GPS 说你在 108.5 m。这叫<strong>测量（measurement）</strong>，它来自传感器。</li>
+</ol>
+<p>两个数不一样。谁对？<strong>都不全对</strong>。预测会累积误差（速度本身不准、有加减速你没建模），测量有噪声（GPS 米级抖动）。</p>
+<p>初学者的做法是"取平均"，(110.0 + 108.5)/2 = 109.25。但这假设两者一样可信，凭什么？如果你的 GPS 是军用级、误差 0.1 m，而你的速度是拍脑袋估的，那你应该几乎完全信 GPS。反过来，如果你在隧道里 GPS 疯狂乱跳、而你的运动模型很准，那你应该几乎无视 GPS。</p>
+<p><strong>卡尔曼滤波做的，就是把"取平均"升级为"按不确定性加权的最优融合"</strong>。它给每个信息源配一个"不确定度"（方差），然后按方差的倒数加权——越确定的，权重越大。这就是全部的直觉。剩下的数学，都是把这句话在多维、带相关性的情况下写严谨。</p>
+<blockquote>
+<p><strong>中高级视角</strong>：卡尔曼滤波不是"一种滤波算法"，它是<strong>线性高斯系统下的贝叶斯最优估计</strong>。在"状态转移和观测都是线性、噪声都是高斯"这个前提下，它给出的是理论上误差方差最小的估计，没有任何其他线性估计器能比它更好。理解这句话的分量，你才知道它的边界在哪——一旦系统非线性（车会转弯），最优性就没了，于是有了后面的 EKF/UKF。</p>
+</blockquote>
+<h2 id="二贝叶斯滤波卡尔曼滤波的母体"><a class="header" href="#二贝叶斯滤波卡尔曼滤波的母体">二、贝叶斯滤波：卡尔曼滤波的"母体"</a></h2>
+<p>在写公式前，先看它的思想骨架。所有递归状态估计（recursive state estimation）都遵循同一个<strong>预测—更新</strong>循环：</p>
+<pre><code class="language-text">        ┌─────────────────────────────────────────┐
+        │  上一刻的信念 bel(x_{k-1})                 │
+        └───────────────────┬─────────────────────┘
+                            │ 用运动模型 + 控制输入 u_k 往前推
+                            ▼
+        ┌─────────────────────────────────────────┐
+        │  预测的信念 bel⁻(x_k)  （先验，prior）     │  ← 不确定性变大
+        └───────────────────┬─────────────────────┘
+                            │ 用新测量 z_k 去"纠正"
+                            ▼
+        ┌─────────────────────────────────────────┐
+        │  更新后的信念 bel(x_k)  （后验，posterior）│  ← 不确定性变小
+        └─────────────────────────────────────────┘
+</code></pre>
+<p>这里的"信念（belief）"是一个<strong>概率分布</strong>，不是一个数。它同时表达"我认为状态大概是多少"和"我有多确定"。用贝叶斯的语言：</p>
+<p>$$
+\underbrace{p(x_k \mid z_{1:k})}<em>{\text{后验}} ;\propto; \underbrace{p(z_k \mid x_k)}</em>{\text{观测似然}} ;\cdot; \underbrace{\int p(x_k \mid x_{k-1}), p(x_{k-1}\mid z_{1:k-1}), dx_{k-1}}_{\text{预测（先验）}}
+$$</p>
+<p>文字翻译：<strong>今天对状态的判断（后验）= 昨天的判断往前推一步（先验）× 今天新测量能提供的证据（似然）</strong>。这个式子对任何分布都成立，但那个积分一般算不出来。</p>
+<p><strong>卡尔曼滤波的杀手锏是一个假设</strong>：如果所有分布都是<strong>高斯分布</strong>，且系统是<strong>线性</strong>的，那么高斯经过线性变换还是高斯、两个高斯相乘还是高斯——于是那个吓人的积分退化成几行矩阵代数。一个高斯分布只需要两个东西完整描述：<strong>均值 $\hat{x}$</strong>（我认为状态是多少）和<strong>协方差 $P$</strong>（我有多不确定，以及各维度之间怎么相关）。整个卡尔曼滤波，就是在<strong>递归地更新这两个量</strong>。</p>
+<h2 id="三系统建模状态方程与观测方程"><a class="header" href="#三系统建模状态方程与观测方程">三、系统建模：状态方程与观测方程</a></h2>
+<p>要用卡尔曼滤波，你先得把你的系统写成两个方程。</p>
+<h3 id="状态方程运动模型"><a class="header" href="#状态方程运动模型">状态方程（运动模型）</a></h3>
+<p>$$
+x_k = F_k, x_{k-1} + B_k, u_k + w_k, \qquad w_k \sim \mathcal{N}(0,, Q_k)
+$$</p>
+<ul>
+<li>$x_k$：<strong>状态向量（state vector）</strong>。你想估计的东西。比如 $x=[p, v]^T$（位置、速度）。</li>
+<li>$F_k$：<strong>状态转移矩阵（state transition matrix）</strong>。描述"没有外力时，状态怎么自然演化"。</li>
+<li>$u_k$：<strong>控制输入（control input）</strong>。你主动施加的、已知的作用。比如 IMU 测到的加速度，或油门刹车。</li>
+<li>$B_k$：<strong>控制矩阵</strong>，把控制输入映射到状态空间。</li>
+<li>$w_k$：<strong>过程噪声（process noise）</strong>。你的运动模型不完美的部分（没建模的颠簸、风阻、轮胎打滑），假设它是零均值高斯，协方差 $Q_k$。</li>
+</ul>
+<p><strong>举个具体的</strong>：匀加速直线运动，状态 $x=[p,v]^T$，时间步长 $\Delta t$，加速度 $a$ 当作控制输入：</p>
+<h1 bmatrix="">$$
+\begin{bmatrix} p_k \ v_k \end</h1>
+<p>\underbrace{\begin{bmatrix} 1 &amp; \Delta t \ 0 &amp; 1 \end{bmatrix}}<em>{F}
+\begin{bmatrix} p</em>{k-1} \ v_{k-1} \end{bmatrix}
++
+\underbrace{\begin{bmatrix} \tfrac{1}{2}\Delta t^2 \ \Delta t \end{bmatrix}}_{B}
+a
+$$</p>
+<p>第一行就是高中物理 $p = p_0 + v\Delta t + \tfrac12 a\Delta t^2$，第二行就是 $v = v_0 + a\Delta t$。<strong>状态方程不神秘，它就是你的运动学公式套上矩阵外衣。</strong></p>
+<h3 id="观测方程测量模型"><a class="header" href="#观测方程测量模型">观测方程（测量模型）</a></h3>
+<p>$$
+z_k = H_k, x_k + v_k, \qquad v_k \sim \mathcal{N}(0,, R_k)
+$$</p>
+<ul>
+<li>$z_k$：<strong>测量向量（measurement）</strong>。传感器实际读到的值。</li>
+<li>$H_k$：<strong>观测矩阵（observation matrix）</strong>。描述"状态如何映射成测量"。注意方向：不是从测量算状态，而是从状态算"应该测到什么"。</li>
+<li>$v_k$：<strong>测量噪声（measurement noise）</strong>，协方差 $R_k$。</li>
+</ul>
+<p><strong>接上例</strong>：GPS 只测位置，不测速度，那么</p>
+<p>$$
+z_k = \underbrace{\begin{bmatrix} 1 &amp; 0 \end{bmatrix}}_{H} \begin{bmatrix} p_k \ v_k \end{bmatrix} + v_k
+$$</p>
+<p>$H=[1\ 0]$ 的意思是"测量 = 位置那一维，看不到速度"。这个 $H$ 极其重要：它是卡尔曼滤波能"用只测位置的 GPS 反过来修正速度估计"的关键——因为位置和速度在协方差 $P$ 里是相关的，修正了位置，相关性会把修正"传导"到速度上。这一点我们后面还会强调。</p>
+<blockquote>
+<p><strong>面试题</strong>：如果我的传感器直接测速度不测位置，$H$ 怎么写？
+<strong>答</strong>：$H=[0\ 1]$。$H$ 永远是"状态 → 测量"的线性映射，跟传感器测什么一一对应。$H$ 甚至可以是非方阵——3 维状态、1 维测量时 $H$ 是 $1\times3$。</p>
+</blockquote>
+<h2 id="四五个核心公式逐行推导与物理含义"><a class="header" href="#四五个核心公式逐行推导与物理含义">四、五个核心公式，逐行推导与物理含义</a></h2>
+<p>现在正式推导。卡尔曼滤波每个周期分<strong>预测</strong>和<strong>更新</strong>两步，共五个公式。我们不但写出来，还要说清每一个"为什么是这样"。</p>
+<h3 id="预测步predict把先验往前推"><a class="header" href="#预测步predict把先验往前推">预测步（Predict）：把先验往前推</a></h3>
+<p><strong>公式 ①（状态预测）：</strong></p>
+<p>$$
+\hat{x}<em>k^- = F_k, \hat{x}</em>{k-1} + B_k, u_k
+$$</p>
+<p>上标 $-$ 表示"先验（prior）"，即"还没看今天测量之前"的估计。这一步就是把状态方程去掉噪声项（噪声均值为 0）直接套用——<strong>用运动模型把上一刻的最优估计往前推一步</strong>。没有玄机。</p>
+<p><strong>公式 ②（协方差预测）：</strong></p>
+<p>$$
+P_k^- = F_k, P_{k-1}, F_k^{T} + Q_k
+$$</p>
+<p>这是第一个需要动脑的地方。$P$ 是状态估计的协方差（不确定度）。为什么这么算？</p>
+<ul>
+<li>若 $x$ 的协方差是 $P$，那么线性变换 $Fx$ 的协方差是 $FPF^T$（这是协方差的基本性质：$\text{Cov}(Fx)=F,\text{Cov}(x),F^T$）。所以预测让不确定性经过运动模型"传播"。</li>
+<li>再<strong>加上</strong> $Q_k$：因为运动模型本身不完美（过程噪声），每往前推一步，都会<strong>注入新的不确定性</strong>。所以预测后 $P$ 一定变大——你对未来总是更没把握。</li>
+</ul>
+<p><strong>记住这个画面</strong>：预测步让均值前进、让椭圆（协方差的几何形象）变胖。</p>
+<h3 id="更新步update用测量把先验拉回来"><a class="header" href="#更新步update用测量把先验拉回来">更新步（Update）：用测量把先验拉回来</a></h3>
+<p><strong>公式 ③（卡尔曼增益）：</strong></p>
+<p>$$
+K_k = P_k^-, H_k^{T} \left( H_k, P_k^-, H_k^{T} + R_k \right)^{-1}
+$$</p>
+<p>这是整个算法的<strong>灵魂</strong>。$K_k$ 叫<strong>卡尔曼增益（Kalman gain）</strong>，它决定"新测量的话你听几分"。先看括号里那一项：</p>
+<p>$$
+S_k = H_k, P_k^-, H_k^{T} + R_k
+$$</p>
+<p>$S_k$ 叫<strong>新息协方差（innovation covariance）</strong>。$H P^- H^T$ 是"把状态不确定性投影到测量空间"（我对状态没把握，会导致我对'应该测到什么'也没把握），$R_k$ 是"测量本身的噪声"。$S_k$ 就是"预测的测量"和"实际测量"之间差异的总不确定度。</p>
+<p>于是增益 $K = P^- H^T S^{-1}$，直觉上是：</p>
+<p>$$
+K \sim \frac{\text{状态不确定性}}{\text{状态不确定性} + \text{测量不确定性}}
+$$</p>
+<ul>
+<li>如果测量很准（$R\to 0$），$K\to H^{-1}$（在标量单位阵情况下 $K\to 1$）：<strong>几乎完全采信测量</strong>。</li>
+<li>如果状态预测很准（$P^-\to 0$），$K\to 0$：<strong>几乎无视测量</strong>，坚持自己的预测。</li>
+</ul>
+<p>这正是开头那句"按方差倒数加权"的严谨版本。</p>
+<p><strong>公式 ④（状态更新，得到后验）：</strong></p>
+<p>$$
+\hat{x}_k = \hat{x}_k^- + K_k \underbrace{\left( z_k - H_k, \hat{x}<em>k^- \right)}</em>{\text{新息 }y_k}
+$$</p>
+<p>括号里的 $y_k = z_k - H_k\hat{x}_k^-$ 叫**新息（innovation）**或残差——"实际测到的"减去"按预测应该测到的"。如果预测完美，新息为 0，状态不动。否则，就沿着新息方向、按增益 $K$ 的比例修正。<strong>后验 = 先验 + 增益 × 惊讶程度。</strong></p>
+<p>这里藏着前面埋的伏笔：即使 $H=[1\ 0]$ 只测位置，$K$ 是个 $2\times1$ 的向量，它的第二个分量非零（只要 $P^-$ 里位置和速度相关），所以<strong>位置的新息会同时修正速度</strong>。这就是卡尔曼滤波"用位置测量改善速度估计"的机制，也是它比"各估各的"强的根本原因。</p>
+<p><strong>公式 ⑤（协方差更新）：</strong></p>
+<p>$$
+P_k = (I - K_k H_k), P_k^-
+$$</p>
+<p>测量带来了信息，所以后验的不确定性 $P_k$ 一定<strong>比先验 $P_k^-$ 小</strong>（或至少不增大）。$(I-KH)$ 是个"收缩因子"。更新步让协方差椭圆变瘦——你现在更确定了。</p>
+<blockquote>
+<p><strong>一句话记住五公式的节奏</strong>：预测让均值前进、椭圆变胖（①②）；更新用增益把均值拉向测量、椭圆变瘦（③④⑤）。周而复始。</p>
+</blockquote>
+<h3 id="协方差矩阵到底是什么"><a class="header" href="#协方差矩阵到底是什么">协方差矩阵到底是什么</a></h3>
+<p>反复出现的 $P$、$Q$、$R$ 都是协方差矩阵，值得单独说。以 $P=\begin{bmatrix}\sigma_p^2 &amp; \sigma_{pv}\ \sigma_{pv} &amp; \sigma_v^2\end{bmatrix}$ 为例：</p>
+<ul>
+<li>对角线 $\sigma_p^2, \sigma_v^2$：位置、速度各自的方差（不确定度）。开根号就是"正负多少米/多少米每秒"。</li>
+<li>非对角 $\sigma_{pv}$：位置和速度的<strong>相关性</strong>。它不是可有可无的细节，正是它让"修正位置带动修正速度"成为可能。把它强行置零（有些偷懒实现会这么干），滤波器性能会明显下降。</li>
+</ul>
+<p>几何上，$P$ 是一个椭圆（多维是椭球）：中心是估计值 $\hat x$，形状和朝向由 $P$ 决定。滤波过程就是这个椭圆在状态空间里一边移动一边变形。<strong>协方差不是附属品，它是卡尔曼滤波的一等公民</strong>——很多工程师只盯着状态估计对不对，却不看 $P$ 合不合理，这是新手和老手的又一分野。</p>
+<h2 id="五完整可运行的-rust-实现融合-gps-与-imu"><a class="header" href="#五完整可运行的-rust-实现融合-gps-与-imu">五、完整可运行的 Rust 实现：融合 GPS 与 IMU</a></h2>
+<p>理论讲完，上代码。我们实现一个 2 维状态（位置、速度）的卡尔曼滤波器，用 <strong>IMU 测到的加速度作为控制输入 $u$</strong> 来驱动预测，用 <strong>GPS 测到的位置作为测量 $z$</strong> 来更新。这正是最小可用的组合导航雏形，下一章 5.2 会把它扩展成真正的 GNSS/IMU 组合导航。</p>
+<p>依赖用 <code>nalgebra</code>，智驾里最常用的线性代数库。<code>Cargo.toml</code>：</p>
+<pre><code class="language-toml">[dependencies]
+nalgebra = "0.33"
+rand = "0.8"          # 仅用于本例生成带噪声的模拟数据
+rand_distr = "0.4"
+</code></pre>
+<p>滤波器本体。为清晰起见我们用固定大小的类型别名（<code>Matrix2</code>、<code>Vector2</code> 等），编译期就能查出维度错误——这正是 Rust 相比 Python/NumPy 的优势之一，维度不匹配不会等到运行时才炸。</p>
+<pre><code class="language-rust ignore">use nalgebra::{Matrix1, Matrix2, Matrix2x1, Matrix1x2, Vector1, Vector2};
+
+/// 状态 x = [位置 p, 速度 v]^T，测量 z = [位置]，控制 u = [加速度]
+pub struct KalmanFilter1D {
+    x: Vector2&lt;f64&gt;,   // 状态估计（后验）
+    p: Matrix2&lt;f64&gt;,   // 状态协方差 P
+    q: Matrix2&lt;f64&gt;,   // 过程噪声协方差 Q
+    r: Matrix1&lt;f64&gt;,   // 测量噪声协方差 R（这里是标量，但保持矩阵形式便于推广）
+    h: Matrix1x2&lt;f64&gt;, // 观测矩阵 H = [1, 0]，只测位置
+}
+
+impl KalmanFilter1D {
+    pub fn new(p0: f64, v0: f64, pos_std: f64, vel_std: f64) -&gt; Self {
+        KalmanFilter1D {
+            x: Vector2::new(p0, v0),
+            // 初始协方差：对角阵，表达“初始估计有多不确定”。宁可给大一点，
+            // 滤波器会在几步内收敛；给太小会导致它过度自信、迟迟不信测量。
+            p: Matrix2::new(pos_std * pos_std, 0.0,
+                            0.0, vel_std * vel_std),
+            q: Matrix2::zeros(),       // 稍后按 dt 构造
+            r: Matrix1::new(1.0),
+            h: Matrix1x2::new(1.0, 0.0),
+        }
+    }
+
+    /// 设定 GPS 测量噪声标准差（米）。R = σ²
+    pub fn set_gps_std(&amp;mut self, gps_std: f64) {
+        self.r = Matrix1::new(gps_std * gps_std);
+    }
+
+    /// 预测步：用 IMU 加速度 accel 和时间步 dt 往前推
+    pub fn predict(&amp;mut self, accel: f64, dt: f64, accel_std: f64) {
+        // 状态转移矩阵 F = [[1, dt], [0, 1]]
+        let f = Matrix2::new(1.0, dt,
+                             0.0, 1.0);
+        // 控制矩阵 B = [0.5 dt², dt]^T
+        let b = Matrix2x1::new(0.5 * dt * dt, dt);
+
+        // 过程噪声 Q：这里用“加速度噪声模型”。加速度不确定度 accel_std 通过
+        // B 传播成状态噪声，Q = B * accel_std² * B^T。这是构造 Q 最有物理依据的方式，
+        // 比拍脑袋填对角线专业得多。
+        let qa = accel_std * accel_std;
+        self.q = b * Matrix1::new(qa) * b.transpose();
+
+        // 公式①：x⁻ = F x + B u
+        self.x = f * self.x + b * Vector1::new(accel);
+        // 公式②：P⁻ = F P Fᵀ + Q
+        self.p = f * self.p * f.transpose() + self.q;
+    }
+
+    /// 更新步：用 GPS 位置测量 z 修正
+    pub fn update(&amp;mut self, z_pos: f64) {
+        let z = Vector1::new(z_pos);
+
+        // 新息 y = z - H x⁻
+        let y = z - self.h * self.x;
+        // 新息协方差 S = H P⁻ Hᵀ + R
+        let s = self.h * self.p * self.h.transpose() + self.r;
+        // 卡尔曼增益 K = P⁻ Hᵀ S⁻¹（公式③）
+        let s_inv = s.try_inverse().expect("S 不可逆：数值出问题了");
+        let k = self.p * self.h.transpose() * s_inv;   // 2x1
+
+        // 公式④：x = x⁻ + K y
+        self.x += k * y;
+
+        // 公式⑤：用 Joseph form 更新协方差（数值稳定，见后文）
+        // P = (I - K H) P⁻ (I - K H)ᵀ + K R Kᵀ
+        let i = Matrix2::identity();
+        let ikh = i - k * self.h;
+        self.p = ikh * self.p * ikh.transpose() + k * self.r * k.transpose();
+    }
+
+    pub fn state(&amp;self) -&gt; (f64, f64) { (self.x[0], self.x[1]) }
+    pub fn pos_std(&amp;self) -&gt; f64 { self.p[(0, 0)].sqrt() }
+    pub fn vel_std(&amp;self) -&gt; f64 { self.p[(1, 1)].sqrt() }
+}</code></pre>
+<p>一个能直接 <code>cargo run</code> 的演示：真值是一辆做正弦加速度运动的车，IMU 以高频给出带噪加速度，GPS 以低频给出带噪位置。看滤波器怎么把两者融合出既平滑又不漂移的估计。</p>
+<pre><code class="language-rust ignore">use rand::thread_rng;
+use rand_distr::{Distribution, Normal};
+
+fn main() {
+    let dt = 0.01;                 // IMU 100 Hz
+    let gps_every = 50;            // GPS 每 50 步来一次，即 2 Hz
+    let accel_std = 0.3;           // IMU 加速度噪声 σ = 0.3 m/s²
+    let gps_std = 2.0;             // GPS 位置噪声 σ = 2.0 m
+
+    let mut rng = thread_rng();
+    let accel_noise = Normal::new(0.0, accel_std).unwrap();
+    let gps_noise = Normal::new(0.0, gps_std).unwrap();
+
+    // 真值状态
+    let (mut true_p, mut true_v) = (0.0_f64, 0.0_f64);
+
+    let mut kf = KalmanFilter1D::new(0.0, 0.0, 5.0, 2.0);
+    kf.set_gps_std(gps_std);
+
+    let mut max_err = 0.0_f64;
+    for k in 0..500 {
+        // ---- 真实世界演化 ----
+        let true_a = (k as f64 * dt).sin();      // 真实加速度：正弦
+        true_p += true_v * dt + 0.5 * true_a * dt * dt;
+        true_v += true_a * dt;
+
+        // ---- IMU 测量：真加速度 + 噪声。喂给 predict 作为控制输入 ----
+        let imu_a = true_a + accel_noise.sample(&amp;mut rng);
+        kf.predict(imu_a, dt, accel_std);
+
+        // ---- GPS 测量：低频到达 ----
+        if k % gps_every == 0 {
+            let gps_p = true_p + gps_noise.sample(&amp;mut rng);
+            kf.update(gps_p);
+        }
+
+        let (est_p, est_v) = kf.state();
+        let err = (est_p - true_p).abs();
+        max_err = max_err.max(err);
+
+        if k % 50 == 0 {
+            println!(
+                "t={:.2}s | 真值 p={:7.3} v={:6.3} | 估计 p={:7.3} v={:6.3} | \
+                 pos_std={:.3} vel_std={:.3}",
+                k as f64 * dt, true_p, true_v, est_p, est_v,
+                kf.pos_std(), kf.vel_std()
+            );
+        }
+    }
+    println!("最大位置误差 = {:.3} m（远小于 GPS 单点噪声 {} m）", max_err, gps_std);
+}</code></pre>
+<p>运行你会看到：估计位置的误差明显小于 GPS 的 2 m 噪声，而且<strong>在两次 GPS 之间</strong>（长达 0.5 秒），滤波器靠 IMU 积分平滑地维持估计，<code>pos_std</code> 缓慢增大；每次 GPS 一到，<code>pos_std</code> 立刻被拉小。这就是组合导航的精髓——<strong>高频但漂移的 IMU 管平滑、低频但无偏的 GPS 管纠偏</strong>，两者用卡尔曼增益自动权衡。这套逻辑，5.2 节会原样搬到真实的 GNSS/IMU 融合里。</p>
+<h2 id="六非线性来了扩展卡尔曼滤波-ekf"><a class="header" href="#六非线性来了扩展卡尔曼滤波-ekf">六、非线性来了：扩展卡尔曼滤波 EKF</a></h2>
+<p>标准卡尔曼滤波有个致命前提：<strong>线性</strong>。可现实里车会转弯，状态里有航向角 $\theta$，运动模型是 $x' = x + v\cos\theta,\Delta t$——$\cos\theta$ 是非线性的。观测也常非线性：用一个已知路标做定位，测到的距离 $\sqrt{(x-x_l)^2+(y-y_l)^2}$ 对状态是非线性的。这时标准 KF 直接失效，因为"高斯经过非线性变换不再是高斯"，那套优美的代数崩了。</p>
+<p><strong>扩展卡尔曼滤波（Extended Kalman Filter, EKF）</strong> 的办法简单粗暴：<strong>在当前估计点把非线性函数一阶泰勒展开，线性化，然后照套标准 KF</strong>。设非线性状态方程和观测方程为</p>
+<p>$$
+x_k = f(x_{k-1}, u_k) + w_k, \qquad z_k = h(x_k) + v_k
+$$</p>
+<p>EKF 用<strong>雅可比矩阵（Jacobian）</strong> 代替原来的 $F$ 和 $H$：</p>
+<p>$$
+F_k = \left.\frac{\partial f}{\partial x}\right|<em>{\hat{x}</em>{k-1}}, \qquad
+H_k = \left.\frac{\partial h}{\partial x}\right|_{\hat{x}_k^-}
+$$</p>
+<p>也就是把 $f, h$ 对状态求偏导、代入当前估计点，得到一个局部线性近似。<strong>预测和更新的其余公式一字不改</strong>，只是：</p>
+<ul>
+<li>状态预测用非线性原函数：$\hat x_k^- = f(\hat x_{k-1}, u_k)$（别用雅可比推均值，那会掉精度）；</li>
+<li>协方差传播和增益计算用雅可比 $F_k, H_k$。</li>
+</ul>
+<p>举个自动驾驶最常见的例子，恒速转弯（CV/CTRV 里的一种）运动模型，状态 $x=[p_x, p_y, \theta, v]^T$：</p>
+<p>$$
+f(x) = \begin{bmatrix} p_x + v\cos\theta,\Delta t \ p_y + v\sin\theta,\Delta t \ \theta \ v \end{bmatrix},\qquad
+F = \frac{\partial f}{\partial x} = \begin{bmatrix}
+1 &amp; 0 &amp; -v\sin\theta,\Delta t &amp; \cos\theta,\Delta t \
+0 &amp; 1 &amp; \phantom{-}v\cos\theta,\Delta t &amp; \sin\theta,\Delta t \
+0 &amp; 0 &amp; 1 &amp; 0 \
+0 &amp; 0 &amp; 0 &amp; 1
+\end{bmatrix}
+$$</p>
+<p>在 Rust 里，你会写一个函数返回状态预测、再写一个函数返回这个雅可比矩阵，剩下的预测/更新流程和上面的 <code>KalmanFilter1D</code> 结构完全一样。5.2 的组合导航骨架就是一个 EKF。</p>
+<blockquote>
+<p><strong>真实项目里</strong>：EKF 是自动驾驶定位与融合的<strong>绝对主力</strong>。几乎所有量产车的 GNSS/IMU 组合导航、目标跟踪，底层都是 EKF 或其变体。它的问题是：线性化在强非线性、大初始误差时会引入偏差甚至发散；而且手推雅可比又累又易错——一个符号写错，滤波器会"看起来在跑"但结果慢慢跑偏，极难 debug。老工程师会用数值雅可比或自动微分（autodiff）交叉验证手推结果。</p>
+</blockquote>
+<h2 id="七无迹卡尔曼滤波-ukf不用求导的另一条路"><a class="header" href="#七无迹卡尔曼滤波-ukf不用求导的另一条路">七、无迹卡尔曼滤波 UKF：不用求导的另一条路</a></h2>
+<p>EKF 要求你会求雅可比，而且只用一阶近似。<strong>无迹卡尔曼滤波（Unscented Kalman Filter, UKF）</strong> 换了个思路：<strong>与其线性化函数，不如用一组精心挑选的采样点去逼近分布</strong>。</p>
+<p>核心是<strong>无迹变换（Unscented Transform）</strong>：从当前高斯分布里按确定规则取出 $2n+1$ 个采样点（叫 <strong>sigma 点</strong>，$n$ 是状态维数），让这些点直接穿过<strong>原始非线性函数</strong>，再从穿过去的点重新统计出均值和协方差。它不需要任何求导。</p>
+<p>EKF vs UKF 的取舍，面试常问：</p>
+<div class="table-wrapper"><table><thead><tr><th></th><th>EKF</th><th>UKF</th></tr></thead><tbody>
+<tr><td>非线性处理</td><td>一阶泰勒展开（线性化）</td><td>sigma 点采样（无需求导）</td></tr>
+<tr><td>精度</td><td>一阶（强非线性时偏差大）</td><td>约二阶（通常更准）</td></tr>
+<tr><td>是否要雅可比</td><td>要，手推易错</td><td><strong>不要</strong>，函数当黑盒用</td></tr>
+<tr><td>计算量</td><td>较小</td><td>较大（多跑 $2n+1$ 次函数）</td></tr>
+<tr><td>实现难度</td><td>中（难在求导）</td><td>中（难在 sigma 点权重与调参 α,β,κ）</td></tr>
+</tbody></table>
+</div>
+<p><strong>什么时候选谁</strong>：非线性温和、维度高、算力紧张 → EKF（比如量产组合导航）。非线性强、雅可比难求或易错、精度要命 → UKF。还有一类粒子滤波（Particle Filter），用大量随机样本表达任意分布，能处理多峰非高斯（比如"我可能在 A 也可能在 B"），代价是算力大，常见于基于地图的全局重定位。工程上有句糙话：<strong>能用 EKF 解决的就别上 UKF，能用 UKF 就别上粒子滤波</strong>——越贵的工具留给越难的问题。</p>
+<h2 id="八工程现实数值稳定性调参与发散"><a class="header" href="#八工程现实数值稳定性调参与发散">八、工程现实：数值稳定性、调参与发散</a></h2>
+<p>推导和玩具代码之间隔着一条工程的鸿沟。下面全是血泪。</p>
+<h3 id="协方差必须保持对称正定"><a class="header" href="#协方差必须保持对称正定">协方差必须保持对称正定</a></h3>
+<p>$P$ 在数学上必然对称正定（symmetric positive-definite, SPD），但浮点运算会让它慢慢失去对称、甚至出现负特征值。一旦 $P$ 不再正定，卡尔曼增益算出来是垃圾，滤波器发散。三个常用护栏：</p>
+<ol>
+<li><strong>Joseph form 更新协方差</strong>。别用简洁的 $P=(I-KH)P^-$，它对舍入误差敏感，容易破坏正定性。用上面代码里的：
+$$
+P_k = (I - K_k H_k),P_k^-,(I - K_k H_k)^{T} + K_k R_k K_k^{T}
+$$
+它在数学上等价，但结构上保证了只要 $P^-$ 和 $R$ 正定，结果就正定。多几次矩阵乘法，换来稳定，值得。</li>
+<li><strong>强制对称化</strong>：每步之后 <code>P = 0.5 * (P + P.transpose())</code>，把浮点导致的微小不对称抹平。</li>
+<li><strong>更狠的做法</strong>用平方根滤波（square-root filter），维护 $P$ 的 Cholesky 因子而非 $P$ 本身，从根上保证正定。高可靠场景（航空、军用）标配，量产车视情况。</li>
+</ol>
+<h3 id="怎么调-q-和-r"><a class="header" href="#怎么调-q-和-r">怎么调 Q 和 R</a></h3>
+<p>这是卡尔曼滤波"三分理论、七分调参"的那七分。</p>
+<ul>
+<li><strong>$R$（测量噪声）相对好定</strong>：查传感器手册，或让传感器静止采一段数据算方差。GPS 的 $R$ 甚至可以用它自报的精度动态设定（好的接收机每帧都给 HDOP/精度估计）。</li>
+<li><strong>$Q$（过程噪声）几乎全靠经验</strong>：它代表"你的运动模型有多不靠谱"。$Q$ 太小 → 滤波器过度自信于模型、不信测量、对真实机动反应迟钝（跟不上急刹）；$Q$ 太大 → 滤波器过度信测量、输出抖、跟噪声跑。用上面代码里的"加速度噪声模型" $Q=B\sigma_a^2 B^T$ 是个好起点，比乱填对角线专业。</li>
+<li><strong>调参口诀</strong>：先大致定 $R$，再调 $Q$ 直到 $Q/R$ 的比例让响应快慢合适。<strong>看新息序列 $y_k$</strong>：如果滤波器一致，新息应该像零均值白噪声，且其实际方差应与理论 $S_k$ 吻合。新息有明显偏置或自相关，说明模型或 $Q,R$ 有问题——这叫<strong>新息一致性检验（NIS/NEES）</strong>，是调滤波器的专业手段，别只靠肉眼看曲线。</li>
+</ul>
+<h3 id="发散了怎么办"><a class="header" href="#发散了怎么办">发散了怎么办</a></h3>
+<p>滤波器<strong>发散（divergence）</strong> 指估计误差和 $P$ 一起失控增大。常见原因和对策：</p>
+<ul>
+<li><strong>$Q$ 太小导致的"过度自信"</strong>：这是最经典的发散。$P$ 被更新得越来越小，增益趋近 0，滤波器彻底不听测量、沿着错误模型一路狂奔。对策：调大 $Q$，给 $P$ 设下限。</li>
+<li><strong>野值（outlier）测量</strong>：GPS 多路径反射给出一个偏差几十米的点，直接更新会把估计带飞。对策：<strong>门控（gating）</strong>——用新息和 $S_k$ 算马氏距离 $y^T S^{-1} y$，超过卡方阈值（比如 2 维 95% 对应 5.99）就<strong>丢弃这次测量</strong>。这是工程必备，没有它上路一定出事。</li>
+<li><strong>数值问题</strong>：见上一节，用 Joseph form + 对称化。</li>
+<li><strong>模型根本不对</strong>：直线模型套急转弯，再怎么调 $Q,R$ 也白搭，该换 CTRV 模型或上 EKF。</li>
+</ul>
+<blockquote>
+<p><strong>中高级视角</strong>：一个上路的卡尔曼滤波器，真正的代码量里可能只有 20% 是那五个公式，80% 是<strong>健壮性</strong>：测量门控、时间戳乱序处理、传感器掉线时的纯预测降级、$P$ 的正定性维护、初始化收敛判断、静止检测（zero-velocity update）……本书 <code>inf/</code> 那套把 Python 推理流水线移植成 Rust 的 SDK，之所以选 Rust，图的也正是这种"编译期就把一类低级错误挡掉、剩下精力对付算法本身"的确定性。能把这些工程护栏讲清楚，你就不是"会调库的"，而是"能扛住上路的"。</p>
+</blockquote>
+<h2 id="小结"><a class="header" href="#小结">小结</a></h2>
+<ul>
+<li>状态估计的核心思想一句话：<strong>把多个带噪信息源，按各自的不确定度（方差）加权融合</strong>，得到比任何单源都好的估计。</li>
+<li>所有递归估计都是<strong>预测—更新</strong>循环；卡尔曼滤波是它在<strong>线性 + 高斯</strong>假设下的最优闭式解，只需递归维护均值 $\hat x$ 和协方差 $P$。</li>
+<li><strong>五个公式</strong>：预测让均值前进、协方差变胖（①②）；更新用卡尔曼增益把均值拉向测量、协方差变瘦（③④⑤）。增益本质是"按方差倒数加权"。</li>
+<li>协方差 $P$ 是一等公民，其非对角相关项让"只测位置也能修正速度"成为可能。</li>
+<li>非线性用 <strong>EKF</strong>（雅可比线性化，量产主力）或 <strong>UKF</strong>（sigma 点采样，免求导、更准但更贵）。</li>
+<li>工程护栏才是上路关键：<strong>Joseph form</strong> 保正定、<strong>门控</strong>挡野值、合理调 <strong>Q/R</strong>、监控新息一致性、发散有兜底。</li>
+</ul>
+<p>下一节，我们把这套卡尔曼机器真正接到车上——用它融合 GNSS、IMU、轮速里程计和地图特征，做出一个能在城市峡谷和隧道里都不掉链子的定位系统。</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../part4/data-loop.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../part5/localization.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../part4/data-loop.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../part5/localization.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>
